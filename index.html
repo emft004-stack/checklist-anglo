@@ -4,8 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Checklist Veicular Anglo</title>
-<!-- Incrementar a versão a cada alteração funcional solicitada. -->
-<meta name="app-version" content="01.14">
+<meta name="app-version" content="01.15">
 <meta name="theme-color" content="#1f6b4a">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
@@ -68,7 +67,7 @@ h2{font-size:.95rem;margin:18px 0 8px;color:var(--ac);text-transform:uppercase;l
 #sig{display:block;width:100%;height:180px;touch-action:none;cursor:crosshair}
 .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
 .actions .btn{flex:1;min-width:150px;text-align:center}
-#msg{display:none;margin-top:12px;padding:10px;border-radius:8px;background:color-mix(in srgb,var(--nc) 15%,transparent);color:var(--nc);font-weight:600}
+#msg,#erroDrive{display:none;margin-top:12px;padding:10px;border-radius:8px;background:color-mix(in srgb,var(--nc) 15%,transparent);color:var(--nc);font-weight:600}
 .legal{font-size:.8rem;color:var(--mut)}
 
 /* Fotos do veículo */
@@ -87,7 +86,7 @@ h2{font-size:.95rem;margin:18px 0 8px;color:var(--ac);text-transform:uppercase;l
  html,body{background:#fff!important;color:#000!important;margin:0!important;padding:0!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
  body{font-size:10pt}
  .wrap{width:100%!important;max-width:100%!important;margin:0!important;padding:0!important;background:#fff!important;color:#000!important}
- header,.btn,.actions,#msg,.add,.thumb button,.hint.noprint,.badge-obrig,.aviso-obrig,.contador-fotos{display:none!important}
+ header,.btn,.actions,#msg,#erroDrive,.add,.thumb button,.hint.noprint,.badge-obrig,.aviso-obrig,.contador-fotos{display:none!important}
  .printtitle{display:block!important;color:#000!important;background:#fff!important}
  .card,.item,.foto-slot,.sigbox{background:#fff!important;color:#000!important;box-shadow:none!important}
  .card{break-inside:auto;page-break-inside:auto}
@@ -99,6 +98,7 @@ h2{font-size:.95rem;margin:18px 0 8px;color:var(--ac);text-transform:uppercase;l
  .foto-slot{border-color:#999}
 }
 .printtitle{display:none;text-align:center;margin-bottom:8px}
+#filaStatus{position:fixed;left:0;right:0;bottom:0;z-index:60;display:none;padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));font:600 14px Arial,sans-serif;text-align:center;color:#fff;background:#1f6b4a}#filaStatus.pend{background:#a05a00}#filaStatus.erro{background:#b3261e}#filaStatus.ok{background:#1f6b4a}body.com-fila{padding-bottom:64px}
 </style>
 </head>
 <body>
@@ -112,12 +112,12 @@ h2{font-size:.95rem;margin:18px 0 8px;color:var(--ac);text-transform:uppercase;l
    <select id="tipoVeiculo">
     <option value="CAMINHONETE">CAMINHONETE</option>
     <option value="BASCULA">BASCULA</option>
-     <option value="RETROESCAVADEIRA">RETROESCAVADEIRA</option>
-     <option value="COMBOIO">COMBOIO</option>
-     <option value="ESCAVADEIRA HIDRÁULICA">ESCAVADEIRA HIDRÁULICA</option>
-     <option value="CAMINHÃO CARROCERIA">CAMINHÃO CARROCERIA</option>
-     <option value="MICRO-ÔNIBUS">MICRO-ÔNIBUS</option>
-     <option value="CAVALO MECÂNICO">CAVALO MECÂNICO</option>
+    <option value="RETROESCAVADEIRA">RETROESCAVADEIRA</option>
+    <option value="COMBOIO">COMBOIO</option>
+    <option value="ESCAVADEIRA HIDRÁULICA">ESCAVADEIRA HIDRÁULICA</option>
+    <option value="CAMINHÃO CARROCERIA">CAMINHÃO CARROCERIA</option>
+    <option value="MICRO-ÔNIBUS">MICRO-ÔNIBUS</option>
+    <option value="CAVALO MECÂNICO">CAVALO MECÂNICO</option>
    </select>
   </label>
   <label class="f">TAG / Identificação do veículo<input type="text" id="tag"></label>
@@ -156,19 +156,25 @@ h2{font-size:.95rem;margin:18px 0 8px;color:var(--ac);text-transform:uppercase;l
 <p class="legal">IMPORTANTE: este checklist é uma conferência inicial do veículo. Requisitos adicionais da locadora, do contrato ou do local de trabalho também devem ser atendidos.</p>
 
 <div id="msg" role="alert"></div>
+<div id="erroDrive" role="alert"></div>
+<div id="filaStatus" class="noprint" role="status" aria-live="polite"></div>
 
 <div class="actions">
   <button type="button" class="btn share" id="btnEnviar">📄 Compartilhar PDF pelo WhatsApp</button>
   <button type="button" class="btn sec" id="btnNovo">🆕 Novo Checklist</button>
 </div>
-<p class="hint noprint" style="margin-top:8px">Toque em “Compartilhar PDF pelo WhatsApp”. Após a preparação do arquivo, toque novamente no mesmo botão e escolha o WhatsApp. Use “Novo Checklist” somente quando quiser limpar os dados.</p>
+<p class="hint noprint" style="margin-top:8px">Escolha o WhatsApp e o destinatário no menu de compartilhamento. Em alguns aparelhos, pode ser necessário tocar novamente após gerar o PDF. Use “Novo Checklist” somente quando quiser limpar os dados.</p>
+<p class="hint noprint" style="margin-top:8px">O checklist também é colocado na fila de envio ao Google Drive. Se estiver offline, mantenha ou abra o aplicativo quando houver internet para enviar.</p>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
+var GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxoPQxS698d9PeXvawiJCKZbr3SQDlYpNjoh2-ig_nkzcaGjXwt8U4tWFlmHRmscLoa/exec";
+
 var VERSAO_APP=document.querySelector('meta[name="app-version"]').content;
 document.title="Checklist Veicular Anglo v"+VERSAO_APP;
 document.getElementById("versaoApp").textContent="v"+VERSAO_APP;
+
 // R=Retroescavadeira, C=Caminhonete, B=Báscula, M=Comboio, H=Escavadeira Hidráulica, T=Caminhão Carroceria, O=Micro-ônibus, V=Cavalo mecânico.
 var TIPOS_VEICULO={R:"RETROESCAVADEIRA",C:"CAMINHONETE",B:"BASCULA",M:"COMBOIO",H:"ESCAVADEIRA HIDRÁULICA",T:"CAMINHÃO CARROCERIA",O:"MICRO-ÔNIBUS",V:"CAVALO MECÂNICO"};
 var ITENS_CHECKLIST=[
@@ -362,7 +368,7 @@ Object.keys(CHECKLISTS).forEach(function(tipo){
 var $=function(i){return document.getElementById(i)};
 var fotos={};
 var fotosVeiculo={dianteira:null, traseira:null, lateral_esq:null, lateral_dir:null};
-var arquivoPDFPronto=null,versaoDadosChecklist=0;
+var arquivoPDFPronto=null,envioDrivePDF=null,versaoDadosChecklist=0;
 var TXT_ENVIAR="📄 Compartilhar PDF pelo WhatsApp";
 var TXT_COMPARTILHAR_PRONTO="📲 Toque para enviar PDF pelo WhatsApp";
 function registrarAlteracaoChecklist(){
@@ -373,6 +379,7 @@ function registrarAlteracaoChecklist(){
  }
  versaoDadosChecklist++;
  arquivoPDFPronto=null;
+ envioDrivePDF=null;
 }
 var CHAVE_RESPOSTAS="checklist-veicular-anglo-respostas-v3";
 var CHAVE_TIPO_VEICULO="checklist-veicular-anglo-tipo-veiculo";
@@ -622,10 +629,10 @@ function ajusta(){
 }
 ajusta();window.addEventListener("resize",function(){if(!assinou)ajusta()});
 function pos(e){var r=cv.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]}
-cv.addEventListener("pointerdown",function(e){e.preventDefault();cv.setPointerCapture(e.pointerId);desenhando=true;var p=pos(e);cx.beginPath();cx.moveTo(p[0],p[1]);cx.lineTo(p[0]+.1,p[1]+.1);cx.stroke();assinou=true});
+cv.addEventListener("pointerdown",function(e){e.preventDefault();cv.setPointerCapture(e.pointerId);registrarAlteracaoChecklist();desenhando=true;var p=pos(e);cx.beginPath();cx.moveTo(p[0],p[1]);cx.lineTo(p[0]+.1,p[1]+.1);cx.stroke();assinou=true});
 cv.addEventListener("pointermove",function(e){if(!desenhando)return;e.preventDefault();var p=pos(e);cx.lineTo(p[0],p[1]);cx.stroke()});
 ["pointerup","pointercancel"].forEach(function(ev){cv.addEventListener(ev,function(){desenhando=false})});
-$("limpa").onclick=function(){assinou=false;ajusta()};
+$("limpa").onclick=function(){registrarAlteracaoChecklist();assinou=false;ajusta()};
 
 /* ============ VALIDAÇÃO ============ */
 function validar(){
@@ -819,9 +826,11 @@ function gerarPDF(){
     return blob;
   }).catch(function(err){if(stage && stage.parentNode) stage.parentNode.removeChild(stage);throw err;});
 }
-/* ============ BOTÕES ============ */
+
+/* ============ NOMES E COMPARTILHAMENTO ============ */
 function placaLimpa(){return (($('tag').value||"").toUpperCase().replace(/[^A-Z0-9_-]/g,""))||"SEM PLACA";}
 function dataArquivo(){var v=($('dataass')&&$('dataass').value)||"";var m=v.match(/^(\d{4})-(\d{2})-(\d{2})$/);if(m)return m[3]+"-"+m[2]+"-"+m[1];var d=new Date();return ("0"+d.getDate()).slice(-2)+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+d.getFullYear();}
+function horaArquivo(){var d=new Date();return ("0"+d.getHours()).slice(-2)+"-"+("0"+d.getMinutes()).slice(-2);}
 function nomeBase(){return "CHECKLIST - "+tipoVeiculo+" - "+placaLimpa()+" - "+dataArquivo();}
 function nomeArquivoPDF(){return nomeBase()+".pdf";}
 function mostrarMsg(t){
@@ -840,61 +849,205 @@ function podeCompartilhar(arquivos){
 function criarArquivo(blob,nome,tipo){
   return typeof File==="undefined"?{blob:blob,name:nome,type:tipo}:new File([blob],nome,{type:tipo});
 }
-function compartilharPDFPronto(){
+function compartilharPDFPronto(automatico){
   if(!arquivoPDFPronto)return;
   var arquivo=arquivoPDFPronto,versao=versaoDadosChecklist;
   function baixarComOrientacao(motivo){
     baixarArquivo(arquivo);
     mostrarMsg("Não foi possível abrir o compartilhamento"+(motivo?" ("+motivo+")":"")+". O PDF foi baixado; no WhatsApp toque no clipe > Documento e escolha “"+arquivo.name+"”.");
   }
-  var podeIniciarCompartilhamento=podeCompartilhar([arquivo]);
-  if(!podeIniciarCompartilhamento){
-    baixarComOrientacao("este aparelho não aceita esse arquivo");
-    return;
-  }
-  var compartilhamento;
-  try{
-    compartilhamento=navigator.share({files:[arquivo],title:nomeBase(),text:nomeBase()});
-  }catch(err){
-    if(err&&err.name==="AbortError") return;
-    console.error("Falha ao compartilhar o PDF.",err);
-    baixarComOrientacao((err&&err.name)||"erro");
-    return;
-  }
-  Promise.resolve(compartilhamento).catch(function(err){
-    if(err&&err.name==="AbortError") return;
-    console.error("Falha ao compartilhar o PDF.",err);
+  function falhaCompartilhamento(err){
     if(versao!==versaoDadosChecklist){
       mostrarMsg("Os dados foram alterados durante o compartilhamento. Gere o PDF novamente antes de compartilhar.");
       return;
     }
+    if(err&&err.name==="AbortError"){
+      mostrarMsg("Compartilhamento cancelado. Toque no botão novamente para escolher o WhatsApp.");
+      return;
+    }
+    if(automatico&&err&&err.name==="NotAllowedError"){
+      mostrarMsg("PDF pronto. Toque novamente no botão e escolha o WhatsApp para compartilhar.");
+      return;
+    }
+    console.error("Falha ao compartilhar o PDF.",err);
     baixarComOrientacao((err&&err.name)||"erro");
+  }
+  if(!podeCompartilhar([arquivo])){
+    baixarComOrientacao("este aparelho não aceita esse arquivo");
+    return;
+  }
+  try{
+    Promise.resolve(navigator.share({files:[arquivo],title:nomeBase(),text:nomeBase()})).catch(falhaCompartilhamento);
+  }catch(err){
+    falhaCompartilhamento(err);
+  }
+}
+
+/* ============ ENVIO PARA GOOGLE DRIVE (FILA OFFLINE + PARTES) ============ */
+function blobParaBase64(blob){
+  return new Promise(function(resolve,reject){
+    var leitor=new FileReader();
+    leitor.onload=function(){resolve(String(leitor.result).split(",")[1]||"");};
+    leitor.onerror=function(){reject(leitor.error||new Error("Não foi possível ler o PDF."));};
+    leitor.readAsDataURL(blob);
+  });
+}
+var TAM_PARTE=1000000;
+function postarDrive(corpo,tentativa){
+  tentativa=tentativa||1;
+  var ctrl=typeof AbortController!=="undefined"?new AbortController():null;
+  var timer=setTimeout(function(){if(ctrl)ctrl.abort();},60000);
+  return fetch(GOOGLE_APPS_SCRIPT_URL,{
+    method:"POST",
+    headers:{"Content-Type":"text/plain;charset=utf-8"},
+    body:JSON.stringify(corpo),
+    signal:ctrl?ctrl.signal:undefined
+  }).then(function(resp){
+    return resp.text().then(function(texto){
+      clearTimeout(timer);
+      var dados=null;
+      try{dados=JSON.parse(texto);}catch(err){}
+      if(!dados)throw new Error("O Google não respondeu como esperado. Verifique a URL do script e reimplante (Qualquer pessoa).");
+      if(!dados.ok){var e=new Error(dados.erro||"O Google Drive recusou o arquivo.");e.definitivo=true;throw e;}
+      return dados;
+    });
+  }).catch(function(err){
+    clearTimeout(timer);
+    if(err&&err.name==="AbortError")err=new Error("Tempo esgotado no envio. Verifique o sinal do celular.");
+    if((err&&err.definitivo)||tentativa>=3)throw err;
+    return new Promise(function(ok){setTimeout(ok,1500*tentativa);}).then(function(){return postarDrive(corpo,tentativa+1);});
+  });
+}
+function enviarArquivoDrive(pasta,arq,aoAvancar){
+  var total=Math.max(1,Math.ceil(arq.dados.length/TAM_PARTE));
+  var id=String(Date.now())+Math.random().toString(36).slice(2,6),i=0,ultimo=null;
+  function proxima(){
+    if(i>=total)return Promise.resolve(ultimo);
+    var parte=arq.dados.substr(i*TAM_PARTE,TAM_PARTE);
+    return postarDrive({pasta:pasta,nome:arq.nome,mime:arq.mime,id:id,indice:i,total:total,dados:parte}).then(function(d){
+      ultimo=d;i++;aoAvancar(parte.length);return proxima();
+    });
+  }
+  return proxima();
+}
+function listaArquivosDrive(pdfBase64){
+  var lista=[{nome:nomeArquivoPDF(),mime:"application/pdf",dados:pdfBase64}];
+  SLOTS_VEICULO.forEach(function(slot){
+    if(fotosVeiculo[slot.key])lista.push({nome:"veiculo-"+slot.key+".jpg",mime:"image/jpeg",dados:fotosVeiculo[slot.key].split(",")[1]||""});
+  });
+  for(var i=1;i<=n;i++){
+    (fotos[i]||[]).forEach(function(url,indice){
+      lista.push({nome:"item-"+("00"+i).slice(-2)+"-"+(indice+1)+".jpg",mime:"image/jpeg",dados:url.split(",")[1]||""});
+    });
+  }
+  return lista;
+}
+
+var FILA_DB="checklist-anglo-fila-envio",FILA_STORE="pendentes",enviandoFila=false,errosFila={};
+function filaAbrir(){return new Promise(function(res,rej){
+  if(!window.indexedDB){rej(new Error("IndexedDB indisponível neste navegador."));return}
+  var r=indexedDB.open(FILA_DB,1);
+  r.onupgradeneeded=function(){r.result.createObjectStore(FILA_STORE,{keyPath:"id"})};
+  r.onsuccess=function(){res(r.result)};
+  r.onerror=function(){rej(r.error)};
+});}
+function filaOp(modo,fn){return filaAbrir().then(function(db){return new Promise(function(res,rej){
+  var tx=db.transaction(FILA_STORE,modo),req=fn(tx.objectStore(FILA_STORE));
+  tx.oncomplete=function(){res(req&&req.result);db.close()};
+  tx.onerror=function(){rej(tx.error);db.close()};
+  tx.onabort=function(){rej(tx.error||new Error("Sem espaço para guardar o checklist."));db.close()};
+});});}
+function filaListar(){return filaOp("readonly",function(s){return s.getAll()}).then(function(l){return (l||[]).sort(function(a,b){return a.criado-b.criado});});}
+function filaSalvar(item){return filaOp("readwrite",function(s){return s.put(item)});}
+function filaRemover(id){return filaOp("readwrite",function(s){return s.delete(id)});}
+function progLer(id){try{return parseInt(localStorage.getItem("anglo-fila-prog-"+id)||"0",10)||0;}catch(e){return 0;}}
+function progGravar(id,k){try{localStorage.setItem("anglo-fila-prog-"+id,String(k));}catch(e){}}
+function progApagar(id){try{localStorage.removeItem("anglo-fila-prog-"+id);}catch(e){}}
+function statusFila(txt,cls){
+  var el=$("filaStatus");if(!el)return;
+  if(!txt){el.style.display="none";document.body.classList.remove("com-fila");return;}
+  el.textContent=txt;el.className="noprint "+(cls||"pend");el.style.display="block";document.body.classList.add("com-fila");
+}
+function resumoFila(){
+  return filaListar().then(function(l){
+    if(!l.length){statusFila("");return 0;}
+    var plural=l.length>1?" checklists pendentes":" checklist pendente";
+    var erro=Object.keys(errosFila).length?errosFila[Object.keys(errosFila)[0]]:"";
+    if(navigator.onLine===false)statusFila("📴 "+l.length+plural+" — sem internet. Envio automático quando o sinal voltar.","pend");
+    else if(erro)statusFila("⚠️ "+l.length+plural+" — nova tentativa em instantes ("+erro+")","erro");
+    else statusFila("☁️ "+l.length+plural+" — enviando...","pend");
+    return l.length;
+  }).catch(function(){return 0;});
+}
+function enviarItemFila(item,posicao,total){
+  var k=progLer(item.id),enviado=0,soma=0;
+  item.arquivos.forEach(function(a){soma+=a.dados.length;});
+  function proximo(){
+    if(k>=item.arquivos.length)return postarDrive({acao:"concluir",pasta:item.pasta,pdf:item.pdfNome});
+    return enviarArquivoDrive(item.pasta,item.arquivos[k],function(c){
+      enviado+=c;
+      statusFila("☁️ Enviando "+posicao+" de "+total+" — "+Math.min(99,Math.round(enviado*100/Math.max(1,soma)))+"%","pend");
+    }).then(function(){k++;progGravar(item.id,k);return proximo();});
+  }
+  return proximo().then(function(r){
+    return filaRemover(item.id).then(function(){progApagar(item.id);return r;});
+  });
+}
+function processarFila(){
+  if(enviandoFila)return Promise.resolve();
+  if(navigator.onLine===false)return resumoFila();
+  enviandoFila=true;
+  var ultimoOk="";
+  return filaListar().then(function(lista){
+    var i=0;
+    function proximo(){
+      if(i>=lista.length)return Promise.resolve();
+      var item=lista[i++];
+      return enviarItemFila(item,i,lista.length).then(function(){
+        delete errosFila[item.id];
+        ultimoOk="✅ Enviado ao Drive: "+item.pasta;
+        return proximo();
+      },function(err){
+        console.error("Falha ao enviar da fila.",err);
+        errosFila[item.id]=(err&&err.message)||"erro desconhecido";
+        if(err&&err.definitivo)return proximo();
+      });
+    }
+    return proximo();
+  }).catch(function(err){console.error(err);}).then(function(){
+    enviandoFila=false;
+    return resumoFila().then(function(qtd){
+      if(!qtd&&ultimoOk){statusFila(ultimoOk,"ok");setTimeout(resumoFila,8000);}
+    });
   });
 }
 
-/* ============ COMPARTILHAMENTO ============ */
-$("btnEnviar").onclick=function(){
-  if(arquivoPDFPronto){compartilharPDFPronto();return;}
-  if(!validar()) return;
-  var btn=this;btn.disabled=true;
-  $("msg").style.display="none";
-  var versao=versaoDadosChecklist;
-  btn.textContent="⏳ Gerando PDF...";
-  gerarPDF().then(function(blob){
-    if(versao!==versaoDadosChecklist) throw new Error("Os dados foram alterados durante a geração. Prepare o PDF novamente.");
-    arquivoPDFPronto=criarArquivo(blob,nomeArquivoPDF(),"application/pdf");
-    btn.textContent=TXT_COMPARTILHAR_PRONTO;
-    mostrarMsg("PDF pronto. Toque novamente no botão e escolha o WhatsApp para compartilhar.");
+function enfileirarPDFDrive(envio){
+  if(!envio||envio.salvo||envio.salvando)return;
+  var aviso=$("erroDrive");
+  if(!GOOGLE_APPS_SCRIPT_URL||GOOGLE_APPS_SCRIPT_URL.indexOf("http")!==0){
+    aviso.dataset.envio=envio.item.id;
+    aviso.textContent="Não foi possível enviar ao Drive: configure a URL do Google Apps Script.";
+    aviso.style.display="block";
+    return;
+  }
+  envio.salvando=true;
+  blobParaBase64(envio.blob).then(function(pdf64){
+    envio.item.arquivos[0].dados=pdf64;
+    return filaSalvar(envio.item);
+  }).then(function(){
+    envio.salvo=true;
+    if(aviso.dataset.envio===envio.item.id){aviso.style.display="none";aviso.textContent="";delete aviso.dataset.envio;}
+    return resumoFila().then(processarFila);
   }).catch(function(err){
-    console.error(err);
-    mostrarMsg("Não foi possível preparar os arquivos: "+((err&&err.message)||"erro desconhecido"));
-  }).finally(function(){
-    btn.disabled=false;
-    if(!arquivoPDFPronto)btn.textContent=TXT_ENVIAR;
-  });
-};
-$('btnNovo').onclick=function(){
-  if(!confirm("Deseja iniciar um NOVO CHECKLIST? Todos os dados, fotos, marcações e assinatura atuais serão apagados. Exporte os arquivos antes de continuar.")) return;
+    console.error("Falha ao guardar o checklist na fila.",err);
+    aviso.dataset.envio=envio.item.id;
+    aviso.textContent="Não foi possível guardar o checklist para o Drive: "+((err&&err.message)||"erro desconhecido")+". Toque novamente no botão para tentar outra vez.";
+    aviso.style.display="block";
+  }).finally(function(){envio.salvando=false;});
+}
+
+function limparFormulario(){
   registrarAlteracaoChecklist();
   limparTodasRespostasSalvas();
   document.querySelectorAll('input[type="text"],input[type="number"],textarea,select').forEach(function(el){el.value="";});
@@ -910,7 +1063,48 @@ $('btnNovo').onclick=function(){
   assinou=false;ajusta();
   var h=new Date();h=new Date(h.getTime()-h.getTimezoneOffset()*60000).toISOString().slice(0,10);$('dataass').value=h;
   window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ============ BOTÕES ============ */
+$("btnEnviar").onclick=function(){
+  if(arquivoPDFPronto){
+    $("msg").style.display="none";
+    enfileirarPDFDrive(envioDrivePDF);
+    compartilharPDFPronto(false);
+    return;
+  }
+  if(!validar()) return;
+  var btn=this;btn.disabled=true;
+  $("msg").style.display="none";
+  var versao=versaoDadosChecklist,pasta=nomeBase()+" - "+horaArquivo(),pdfNome=nomeArquivoPDF();
+  btn.textContent="⏳ Gerando PDF...";
+  gerarPDF().then(function(blob){
+    if(versao!==versaoDadosChecklist) throw new Error("Os dados foram alterados durante a geração. Prepare o PDF novamente.");
+    arquivoPDFPronto=criarArquivo(blob,pdfNome,"application/pdf");
+    envioDrivePDF={blob:blob,salvo:false,salvando:false,item:{id:String(Date.now())+Math.random().toString(36).slice(2,6),pasta:pasta,pdfNome:pdfNome,arquivos:listaArquivosDrive(""),criado:Date.now()}};
+    btn.textContent=TXT_COMPARTILHAR_PRONTO;
+    enfileirarPDFDrive(envioDrivePDF);
+    compartilharPDFPronto(true);
+  }).catch(function(err){
+    console.error(err);
+    mostrarMsg("Não foi possível preparar os arquivos: "+((err&&err.message)||"erro desconhecido"));
+  }).finally(function(){
+    btn.disabled=false;
+    if(!arquivoPDFPronto)btn.textContent=TXT_ENVIAR;
+  });
 };
+
+$('btnNovo').onclick=function(){
+  if(!confirm("Deseja iniciar um NOVO CHECKLIST? Todos os dados, fotos, marcações e assinatura atuais serão apagados. Exporte os arquivos antes de continuar.")) return;
+  limparFormulario();
+};
+
+window.addEventListener("online",function(){processarFila();});
+window.addEventListener("offline",function(){resumoFila();});
+document.addEventListener("visibilitychange",function(){if(!document.hidden)processarFila();});
+setInterval(function(){processarFila();},60000);
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();}catch(e){}
+resumoFila().then(function(){processarFila();});
 
 /* Inicializa */
 (function(){

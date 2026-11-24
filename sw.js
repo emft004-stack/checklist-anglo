@@ -1,4 +1,4 @@
-const VERSAO = "checklist-anglo-v21";
+const VERSAO = "checklist-anglo-v22";
 const ARQUIVOS = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
 const CDNS = [
   "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
@@ -9,7 +9,10 @@ self.addEventListener("install", (e) => {
     caches.open(VERSAO).then(async (c) => {
       await c.addAll(ARQUIVOS);
       for (const url of CDNS) {
-        try { await c.add(new Request(url, { mode: "no-cors" })); } catch (_) {}
+        try {
+          const resposta = await fetch(new Request(url, { mode: "no-cors" }));
+          if (resposta.ok || resposta.type === "opaque") await c.put(url, resposta);
+        } catch (_) {}
       }
     }).then(() => self.skipWaiting())
   );
