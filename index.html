@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Checklist Veicular Anglo</title>
+<!-- Incrementar a versão a cada alteração funcional solicitada. -->
+<meta name="app-version" content="01.14">
+<meta name="theme-color" content="#1f6b4a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Checklist Anglo">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+<style>
+:root{--bg:#f4f6f5;--card:#fff;--tx:#1b2420;--mut:#5d6b64;--bd:#d5dcd8;--ac:#1f6b4a;--ok:#1f8a4c;--nc:#c0392b;--na:#6b7280;--inp:#fff;}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--tx);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;padding:12px;padding-top:calc(12px + env(safe-area-inset-top,0px));padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+.wrap{max-width:760px;margin:0 auto}
+header{background:var(--ac);color:#fff;border-radius:12px;padding:14px 16px;margin-bottom:12px}
+header small{opacity:.85;letter-spacing:.04em}
+header h1{font-size:1.15rem;margin:2px 0 0}
+header h1 .versao-app{font-size:.75em;opacity:.85;font-weight:500;white-space:nowrap}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:520px){.grid{grid-template-columns:1fr}}
+label.f{display:block;font-size:.8rem;color:var(--mut);font-weight:600}
+input[type=text],input[type=date],input[type=number],select,textarea{width:100%;margin-top:3px;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--inp);color:var(--tx);font:inherit}
+textarea{min-height:70px;resize:vertical}
+.hint{font-size:.85rem;color:var(--mut);margin:0}
+h2{font-size:.95rem;margin:18px 0 8px;color:var(--ac);text-transform:uppercase;letter-spacing:.03em}
+.item{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:8px}
+.item.miss{border-color:var(--nc);box-shadow:0 0 0 2px color-mix(in srgb,var(--nc) 30%,transparent)}
+.item.obrig{border-left:4px solid var(--ac)}
+.item .t{display:flex;gap:8px}
+.item .n{font-weight:700;color:var(--mut);min-width:1.6em}
+.badge-obrig{display:inline-block;background:var(--nc);color:#fff;font-size:.65rem;font-weight:700;padding:2px 6px;border-radius:4px;margin-left:6px;vertical-align:middle;letter-spacing:.03em}
+.opts{display:flex;gap:8px;margin-top:10px}
+.opts label{flex:1;position:relative}
+.opts input{position:absolute;opacity:0}
+.opts span{display:block;text-align:center;padding:10px 0;border:2px solid var(--bd);border-radius:8px;font-weight:700;color:var(--mut);cursor:pointer;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.opts input:checked+span.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.opts input:checked+span.nc{background:var(--nc);border-color:var(--nc);color:#fff}
+.opts input:checked+span.na{background:var(--na);border-color:var(--na);color:#fff}
+.opts input:focus-visible+span{outline:3px solid var(--ac);outline-offset:2px}
+.prob{display:none;margin-top:10px;padding-top:10px;border-top:1px dashed var(--bd)}
+.item.isnc .prob{display:block}
+.item-fotos{margin-top:8px}
+.btn{display:inline-block;padding:10px 14px;border-radius:8px;border:1px solid var(--ac);background:transparent;color:var(--ac);font:inherit;font-weight:600;cursor:pointer}
+.btn.pri{background:var(--ac);color:#fff;-webkit-print-color-adjust:exact}
+.btn.share{background:#25D366;border-color:#25D366;color:#fff}
+.btn.sec{background:var(--na);border-color:var(--na);color:#fff}
+.btn:disabled{opacity:.6;cursor:not-allowed}
+.thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.thumb{position:relative;width:96px;height:96px}
+.thumb img{width:100%;height:100%;object-fit:cover;border-radius:8px;border:1px solid var(--bd)}
+.thumb button{position:absolute;top:-6px;right:-6px;width:26px;height:26px;border-radius:50%;border:0;background:var(--nc);color:#fff;font-size:16px;line-height:1;cursor:pointer}
+.aviso-obrig{display:none;margin-top:8px;padding:8px;border-radius:6px;background:color-mix(in srgb,var(--nc) 15%,transparent);color:var(--nc);font-weight:600;font-size:.8rem}
+.aviso-obrig.show{display:block}
+.contador-fotos{font-size:.8rem;color:var(--mut);margin-top:6px;font-weight:600}
+.contador-fotos.completo{color:var(--ok)}
+.contador-fotos.incompleto{color:var(--nc)}
+.sigbox{border:2px dashed var(--bd);border-radius:10px;background:#fff;margin-top:6px}
+#sig{display:block;width:100%;height:180px;touch-action:none;cursor:crosshair}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.actions .btn{flex:1;min-width:150px;text-align:center}
+#msg{display:none;margin-top:12px;padding:10px;border-radius:8px;background:color-mix(in srgb,var(--nc) 15%,transparent);color:var(--nc);font-weight:600}
+.legal{font-size:.8rem;color:var(--mut)}
+
+/* Fotos do veículo */
+.fotos-veiculo-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+@media (max-width:520px){.fotos-veiculo-grid{grid-template-columns:1fr 1fr}}
+.foto-slot{border:2px dashed var(--bd);border-radius:10px;padding:10px;text-align:center;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative}
+.foto-slot.tem-foto{border-style:solid;border-color:var(--ok)}
+.foto-slot img{width:100%;height:100px;object-fit:cover;border-radius:6px;margin-bottom:6px}
+.foto-slot .label-slot{font-size:.8rem;font-weight:700;color:var(--mut);margin-bottom:6px}
+.foto-slot .btn-add-foto{font-size:.75rem;padding:6px 10px}
+.foto-slot .rm-slot{position:absolute;top:-6px;right:-6px;width:24px;height:24px;border-radius:50%;border:0;background:var(--nc);color:#fff;font-size:14px;line-height:1;cursor:pointer;display:none}
+.foto-slot.tem-foto .rm-slot{display:block}
+
+@media print{
+ :root{color-scheme:light;--bg:#fff;--card:#fff;--tx:#000;--mut:#333;--bd:#aaa;--ac:#1f6b4a;--ok:#1f8a4c;--nc:#c0392b;--na:#666;--inp:#fff;background:#fff;color:#000}
+ html,body{background:#fff!important;color:#000!important;margin:0!important;padding:0!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ body{font-size:10pt}
+ .wrap{width:100%!important;max-width:100%!important;margin:0!important;padding:0!important;background:#fff!important;color:#000!important}
+ header,.btn,.actions,#msg,.add,.thumb button,.hint.noprint,.badge-obrig,.aviso-obrig,.contador-fotos{display:none!important}
+ .printtitle{display:block!important;color:#000!important;background:#fff!important}
+ .card,.item,.foto-slot,.sigbox{background:#fff!important;color:#000!important;box-shadow:none!important}
+ .card{break-inside:auto;page-break-inside:auto}
+ .item,.foto-slot{break-inside:avoid;page-break-inside:avoid}
+ .prob{display:block}
+ .item:not(.isnc) .prob{display:none}
+ input[type=text],input[type=date],input[type=number],textarea{background:#fff!important;color:#000!important;border:0;border-bottom:1px solid #999;border-radius:0;padding:2px 0}
+ .sigbox{border:1px solid #000}
+ .foto-slot{border-color:#999}
+}
+.printtitle{display:none;text-align:center;margin-bottom:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><small>EMFLORTEC ENGENHARIA</small><h1>Checklist Veicular Anglo <span class="versao-app" id="versaoApp"></span></h1></header>
+<div class="printtitle"><strong>EMFLORTEC ENGENHARIA</strong><br>CHECKLIST VEICULAR ANGLO</div>
+
+<div class="card">
+ <div class="grid">
+  <label class="f">Tipo de veículo
+   <select id="tipoVeiculo">
+    <option value="CAMINHONETE">CAMINHONETE</option>
+    <option value="BASCULA">BASCULA</option>
+     <option value="RETROESCAVADEIRA">RETROESCAVADEIRA</option>
+     <option value="COMBOIO">COMBOIO</option>
+     <option value="ESCAVADEIRA HIDRÁULICA">ESCAVADEIRA HIDRÁULICA</option>
+     <option value="CAMINHÃO CARROCERIA">CAMINHÃO CARROCERIA</option>
+     <option value="MICRO-ÔNIBUS">MICRO-ÔNIBUS</option>
+     <option value="CAVALO MECÂNICO">CAVALO MECÂNICO</option>
+   </select>
+  </label>
+  <label class="f">TAG / Identificação do veículo<input type="text" id="tag"></label>
+  <label class="f">Quilometragem<input type="number" id="km" inputmode="numeric"></label>
+  <label class="f">Motorista / Condutor<input type="text" id="motorista"></label>
+  <label class="f">CPF do motorista *<input type="text" id="cpf" inputmode="numeric" placeholder="000.000.000-00" maxlength="14"></label>
+ </div>
+</div>
+
+<!-- FOTOS DO VEÍCULO -->
+<div class="card" id="cardFotosVeiculo">
+ <h2 style="margin-top:0">📸 Fotos do veículo (opcionais durante os testes)</h2>
+ <p class="hint" style="margin-bottom:0">Adicione fotos dianteira, traseira e das laterais se desejar. Cada foto sai com data, hora e localização GPS (permita o acesso à localização quando o navegador pedir).</p>
+ <div class="fotos-veiculo-grid" id="fotosVeiculoGrid"></div>
+ <div class="aviso-obrig" id="avisoFotosVeiculo">⚠️ Adicione as 4 fotos do veículo (dianteira, traseira, lateral esquerda e lateral direita).</div>
+</div>
+
+<p class="hint"><b>Como preencher:</b> <b>OK</b> = boas condições · <b>NC</b> = problema encontrado (aparece o campo para descrição e foto opcional) · <b>N/A</b> = não se aplica. Durante os testes, os itens podem ficar sem resposta. <br>As fotos do veículo são opcionais durante os testes. Preencha também o <b>CPF do motorista</b>.</p>
+
+<div id="lista"></div>
+
+<div class="card">
+ <label class="f">Observações gerais / danos identificados
+  <textarea id="obs" placeholder="Descreva danos, defeitos ou itens faltantes. Informe se a locadora foi comunicada e se foram feitas fotos."></textarea></label>
+</div>
+
+<div class="card">
+ <h2 style="margin-top:0">Confirmação do motorista</h2>
+ <p class="legal">Confirmo que realizei a conferência do veículo e registrei os problemas e danos identificados. Estou ciente de que qualquer condição que comprometa a segurança deve ser comunicada à gestão de frotas antes de utilizar o veículo.</p>
+ <label class="f">Assinatura do motorista (assine com o dedo)</label>
+ <div class="sigbox"><canvas id="sig"></canvas></div>
+ <div class="actions"><button type="button" class="btn" id="limpa">Limpar assinatura</button></div>
+ <label class="f" style="margin-top:12px;max-width:200px">Data<input type="date" id="dataass"></label>
+</div>
+
+<p class="legal">IMPORTANTE: este checklist é uma conferência inicial do veículo. Requisitos adicionais da locadora, do contrato ou do local de trabalho também devem ser atendidos.</p>
+
+<div id="msg" role="alert"></div>
+
+<div class="actions">
+  <button type="button" class="btn share" id="btnEnviar">📄 Compartilhar PDF pelo WhatsApp</button>
+  <button type="button" class="btn sec" id="btnNovo">🆕 Novo Checklist</button>
+</div>
+<p class="hint noprint" style="margin-top:8px">Toque em “Compartilhar PDF pelo WhatsApp”. Após a preparação do arquivo, toque novamente no mesmo botão e escolha o WhatsApp. Use “Novo Checklist” somente quando quiser limpar os dados.</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+var VERSAO_APP=document.querySelector('meta[name="app-version"]').content;
+document.title="Checklist Veicular Anglo v"+VERSAO_APP;
+document.getElementById("versaoApp").textContent="v"+VERSAO_APP;
+// R=Retroescavadeira, C=Caminhonete, B=Báscula, M=Comboio, H=Escavadeira Hidráulica, T=Caminhão Carroceria, O=Micro-ônibus, V=Cavalo mecânico.
+var TIPOS_VEICULO={R:"RETROESCAVADEIRA",C:"CAMINHONETE",B:"BASCULA",M:"COMBOIO",H:"ESCAVADEIRA HIDRÁULICA",T:"CAMINHÃO CARROCERIA",O:"MICRO-ÔNIBUS",V:"CAVALO MECÂNICO"};
+var ITENS_CHECKLIST=[
+ ["1. Documentação e requisitos","Carteira de risco crítico específica para atividade","RCBMH"],
+ ["1. Documentação e requisitos","Certificado de Registro, licenciamento, DPVAT ano/prazo vigente","CBM"],
+ ["1. Documentação e requisitos","Apólice de Seguro","RCBM"],
+ ["1. Documentação e requisitos","Disponibilidade do manual do fabricante em língua pátria com identificação da TAG","RCBM"],
+ ["1. Documentação e requisitos","Possui FISPQ?","M"],
+ ["1. Documentação e requisitos","Possui certificação do INMETRO?","M"],
+ ["1. Documentação e requisitos","Possui laudo de estanqueidade?","M"],
+ ["1. Documentação e requisitos","Segurança e ART","M"],
+ ["2. Verificação mecânica","Motor de arranque / bateria.","RCBM"],
+ ["2. Verificação mecânica","Vazamento de combustível / óleo hidráulico","RCBM"],
+ ["3. Parte elétrica e sinalização","Funcionamento da buzina","RCBM"],
+ ["3. Parte elétrica e sinalização","Cinto de segurança (tipo 03 pontos para cabine)","M"],
+ ["3. Parte elétrica e sinalização","Extintor de princípio contra incêndio (proporcional ao EMS)","M"],
+ ["3. Parte elétrica e sinalização","Funcionamento do ar-condicionado","RM"],
+ ["3. Parte elétrica e sinalização","Possui haste de aterramento?","M"],
+ ["3. Parte elétrica e sinalização","Luz de ré e alarme sonoro","RCBM"],
+ ["3. Parte elétrica e sinalização","Espelhos retrovisores","M"],
+ ["3. Parte elétrica e sinalização","Funcionamento do farol e farolete","M"],
+ ["3. Parte elétrica e sinalização","Funcionamento do tacógrafo","M"],
+ ["3. Parte elétrica e sinalização","Sistema anticolisão (ex.: sensor de aproximação, câmera de ré)","CBMR"],
+ ["3. Parte elétrica e sinalização","Farol (isento de danos)","RCBM"],
+ ["3. Parte elétrica e sinalização","Lanternas traseiras - farol / freio (isentas de danos)","RCBM"],
+ ["3. Parte elétrica e sinalização","Setas dianteira e traseira (isentas de danos)","RCB"],
+ ["3. Parte elétrica e sinalização","Condição do para-brisa, limpador de para-brisa e esguicho","RCBM"],
+ ["3. Parte elétrica e sinalização","Funcionamento da luz de placa","CBM"],
+ ["3. Parte elétrica e sinalização","Transformação dos faróis (alto e baixo)","CBM"],
+ ["3. Parte elétrica e sinalização","Funcionamento do pisca-alerta","RCBM"],
+ ["3. Parte elétrica e sinalização","Luzes indicativas do painel","RCB"],
+ ["3. Parte elétrica e sinalização","Marcador de consumo de combustível funcionando","RC"],
+ ["4. Condições do veículo / equipamento","Abertura das janelas","RCBM"],
+ ["4. Condições do veículo / equipamento","Assento com encosto e apoio de cabeça para todos os passageiros","M"],
+ ["4. Condições do veículo / equipamento","Ar-condicionado (quente e frio)","CB"],
+ ["4. Condições do veículo / equipamento","Bancos (regulagem, fixos e em boas condições)","RCBM"],
+ ["4. Condições do veículo / equipamento","Condições dos pneus (desgaste do pneu / fissuras)","RCBM"],
+ ["4. Condições do veículo / equipamento","Espelhos retrovisores (interno e externo)","RCB"],
+ ["4. Condições do veículo / equipamento","Estado de conservação e apresentação visual do equipamento (estrutura e/ou lataria)","RCB"],
+ ["4. Condições do veículo / equipamento","Condição do estepe","BM"],
+ ["4. Condições do veículo / equipamento","03 unidades de triângulo, cone e/ou marcadores luminosos","RCBM"],
+ ["4. Condições do veículo / equipamento","Kit de primeiros socorros (conforme categoria)","RCBM"],
+ ["4. Condições do veículo / equipamento","Bandeirola para acesso à mina (conforme categoria)","RCBM"],
+ ["4. Condições do veículo / equipamento","Condição do para-choque (dianteiro e traseiro)","CBM"],
+ ["4. Condições do veículo / equipamento","Condição das placas (selo da placa traseira)","CBM"],
+ ["4. Condições do veículo / equipamento","Condição do santo antônio externo","C"],
+ ["4. Condições do veículo / equipamento","Funcionamento do tacógrafo com certificado de aferição","B"],
+ ["4. Condições do veículo / equipamento","Maçaneta das portas (interno e externo)","RCBM"],
+ ["4. Condições do veículo / equipamento","Chave de roda, macaco hidráulico","RCBM"],
+ ["4. Condições do veículo / equipamento","Possuir dispositivo para manter o torqueamento dos parafusos das rodas","RCBM"],
+ ["4. Condições do veículo / equipamento","Funcionamento do freio estacionário","CBM"],
+ ["4. Condições do veículo / equipamento","Portátil em caso de emergência?","M"],
+ ["4. Condições do veículo / equipamento","Condição da lanterna e setas","M"],
+ ["4. Condições do veículo / equipamento","Limpador de para-brisa e esguicho","M"],
+ ["4. Condições do veículo / equipamento","Funcionamento da luz de freio","M"],
+ ["4. Condições do veículo / equipamento","Condição do para-brisa","M"],
+ ["4. Condições do veículo / equipamento","Proteção térmica da descarga","R"],
+ ["5. Itens de segurança e operação","CAS","RCB"],
+ ["5. Itens de segurança e operação","Rádio de comunicação fixo","RCB"],
+ ["5. Itens de segurança e operação","Sirene de ré","RCB"],
+ ["5. Itens de segurança e operação","Tração 4x4 - high and low","RCB"],
+ ["5. Itens de segurança e operação","Veículo / equipamento limpo e organizado","B"],
+ ["5. Itens de segurança e operação","Identificação da capacidade de carga","RCB"],
+ ["5. Itens de segurança e operação","Condições das adesivações padrão Anglo","RCB"],
+ ["5. Itens de segurança e operação","Extintor de princípio contra incêndio em suporte fixado à estrutura do veículo / equipamento e dimensionado","RCB"],
+ ["5. Itens de segurança e operação","Calço para pneus conforme premissas do procedimento (com alça para manuseio) - 02 unidades","CBM"],
+ ["5. Itens de segurança e operação","Adesivação ARS (EMS) e estilo \"Velocidade Controlada\"","M"],
+ ["5. Itens de segurança e operação","Inclinômetro","B"],
+ ["5. Itens de segurança e operação","Possui pontos de apoio para as mãos ao subir e descer do equipamento e carroceria?","MB"],
+ ["5. Itens de segurança e operação","Chave geral para desenergização do sistema elétrico","B"],
+ ["5. Itens de segurança e operação","Sistema de alarme de freio de estacionamento ativo (deverá soar caso o freio de estacionamento não seja acionado)","MB"],
+ ["5. Itens de segurança e operação","Giroled de 54 LEDs SMD ou 128 LEDs comuns na cor verde","BR"],
+ ["5. Itens de segurança e operação","Condição das correntes e sistema de elevação e abertura da tampa da báscula","B"],
+ ["5. Itens de segurança e operação","Inibidor de deslocamento com báscula alta","B"],
+ ["5. Itens de segurança e operação","As partes rotativas estão protegidas?","M"],
+ ["5. Itens de segurança e operação","Condição da lataria","M"],
+ ["5. Itens de segurança e operação","Condições dos pneus (TWI, desgaste do pneu, modelo remolde/recauchutado)","M"],
+ ["5. Itens de segurança e operação","Possui kit de atendimento ambiental?","M"],
+ ["5. Itens de segurança e operação","Possui kit de primeiros socorros conforme categoria?","M"],
+ ["5. Itens de segurança e operação","Verificar existência de material solto dentro da cabine","MR"],
+ ["1. Requisitos por categoria","Sirene de ré","H"],
+ ["2. Condutor","Carteira Nacional de Habilitação compatível com a categoria, válida; se motorista/operador profissional, possuir observação EAR - Exerce Atividade Remunerada.","H"],
+ ["4. Mecânica","Motor de arranque / bateria.","H"],
+ ["4. Mecânica","Vazamento de combustível / óleo hidráulico.","H"],
+ ["4. Mecânica","Proteção térmica da descarga.","H"],
+ ["5. Parte elétrica / câmeras","ADAS.","H"],
+ ["5. Parte elétrica / câmeras","Chave geral para desenergização do sistema elétrico com dispositivo de bloqueio.","H"],
+ ["5. Parte elétrica / câmeras","Condição do para-brisa, limpador de para-brisa e esguicho.","H"],
+ ["5. Parte elétrica / câmeras","Farol (isento de danos).","H"],
+ ["5. Parte elétrica / câmeras","Funcionamento da buzina.","H"],
+ ["5. Parte elétrica / câmeras","Giroled cor verde de 54 LEDs SMD ou 128 LEDs comuns.","H"],
+ ["5. Parte elétrica / câmeras","Luzes indicativas do painel.","H"],
+ ["5. Parte elétrica / câmeras","Marcador de consumo de combustível funcionando.","H"],
+ ["5. Parte elétrica / câmeras","Sistema anticolisão (câmera de ré).","H"],
+ ["5. Parte elétrica / câmeras","Alarme sonoro de ré (som branco para acesso à mina).","H"],
+ ["6. Verificação do veículo / equipamento","Abertura das janelas.","H"],
+ ["6. Verificação do veículo / equipamento","Adesivação padrão Anglo American para EMS / veículos.","H"],
+ ["6. Verificação do veículo / equipamento","Ar-condicionado (quente e frio).","H"],
+ ["6. Verificação do veículo / equipamento","As esteiras e roletes estão em condições adequadas de uso?","H"],
+ ["6. Verificação do veículo / equipamento","Bancos (regulagem, fixos e em boas condições).","H"],
+ ["6. Verificação do veículo / equipamento","Cinto de segurança (tipo 03 pontos). Abdominal apenas para EMS, obedecendo aos critérios do fabricante.","H"],
+ ["6. Verificação do veículo / equipamento","Espelhos retrovisores (interno e externo).","H"],
+ ["6. Verificação do veículo / equipamento","Estado de conservação e apresentação visual do equipamento (estrutura e/ou lataria).","H"],
+ ["6. Verificação do veículo / equipamento","Extintor de princípio contra incêndio em suporte fixado à estrutura do veículo / equipamento e dimensionado adequadamente.","H"],
+ ["6. Verificação do veículo / equipamento","Faixa refletiva padrão DENATRAN no entorno do equipamento / carroceria e/ou implemento.","H"],
+ ["6. Verificação do veículo / equipamento","Funcionamento da maçaneta das portas (interno e externo) e tranca da cabine.","H"],
+ ["6. Verificação do veículo / equipamento","Funcionamento da trava de segurança na lateral do assento.","H"],
+ ["6. Verificação do veículo / equipamento","Inexistência de material solto dentro da cabine.","H"],
+ ["6. Verificação do veículo / equipamento","Disponibilidade do manual do fabricante em língua pátria com identificação da TAG","H"],
+ ["6. Verificação do veículo / equipamento","Pontos de apoio para as mãos ao subir e descer do equipamento, devidamente sinalizados (pintura/adesivo).","H"],
+ ["6. Verificação do veículo / equipamento","Proteção contra risco de queda de diferença de nível.","H"],
+ ["3. Condutor","Carteira de risco crítico específica para a atividade.","T"],
+ ["4. Documentação","Certificado de Registro, licenciamento, DPVAT ano/prazo vigente.","T"],
+ ["4. Documentação","Cópia do seguro a terceiros.","T"],
+ ["5. Mecânica","Motor de arranque / bateria.","T"],
+ ["5. Mecânica","Vazamento de combustível / óleo hidráulico.","T"],
+ ["7. Verificação do veículo / equipamento","02 unidades de calço para pneus com alça, conforme premissas do procedimento / orientações do fabricante.","T"],
+ ["7. Verificação do veículo / equipamento","03 unidades de triângulo, cone e/ou marcadores luminosos.","T"],
+ ["7. Verificação do veículo / equipamento","Abertura das janelas.","T"],
+ ["7. Verificação do veículo / equipamento","Adesivação padrão Anglo American para EMS / veículos.","T"],
+ ["7. Verificação do veículo / equipamento","Ar-condicionado (quente e frio).","T"],
+ ["7. Verificação do veículo / equipamento","As laterais da carroceria estão com trava em seus ganchos, de forma que impeça que caiam ao abrir?","T"],
+ ["7. Verificação do veículo / equipamento","Bancos (regulagem, fixos e em boas condições).","T"],
+ ["7. Verificação do veículo / equipamento","Chave de roda e macaco hidráulico. Para transportes internos no site e com estrutura de manutenção, pode ser requerida a isenção do estepe, chave de roda e macaco.","T"],
+ ["7. Verificação do veículo / equipamento","Cinto de segurança (tipo 03 pontos). Abdominal apenas para EMS, obedecendo aos critérios do fabricante.","T"],
+ ["7. Verificação do veículo / equipamento","Condições da escada / estribo de acesso à cabine.","T"],
+ ["7. Verificação do veículo / equipamento","Condições da escada / estribo de acesso ao microonibus","O"],
+ ["7. Verificação do veículo / equipamento","Condições da escada / estribo de acesso a cabine","V"],
+ ["7. Verificação do veículo / equipamento","Condições dos pneus e estepe (TWI, desgaste do pneu, certificação do Inmetro de recauchutado estampada no pneu). Os pneus devem ser do mesmo tipo e tamanho. Para transportes internos no site e com estrutura de manutenção, pode ser requerida a isenção do estepe.","T"],
+ ["7. Verificação do veículo / equipamento","Espelhos retrovisores (interno e externo).","T"],
+ ["7. Verificação do veículo / equipamento","Extintor de princípio contra incêndio em suporte fixado à estrutura do veículo / equipamento e dimensionado adequadamente.","T"],
+ ["7. Verificação do veículo / equipamento","Faixa refletiva padrão DENATRAN no entorno do equipamento / carroceria e/ou implemento.","T"],
+ ["7. Verificação do veículo / equipamento","Funcionamento da maçaneta das portas (interno e externo) e tranca da cabine.","T"],
+ ["7. Verificação do veículo / equipamento","Inexistência de material solto dentro da cabine.","T"],
+ ["7. Verificação do veículo / equipamento","Inexistência de trinca na estrutura do chassi.","T"],
+ ["7. Verificação do veículo / equipamento","Kit de primeiros socorros conforme categoria.","T"],
+ ["7. Verificação do veículo / equipamento","Manual do fabricante em língua pátria com identificação do chassi / placa / TAG.","T"],
+ ["7. Verificação do veículo / equipamento","Possui dispositivo / marcador para manter o torqueamento dos parafusos das rodas ou sinalizador de torque (apenas EMS).","T"],
+ ["7. Verificação do veículo / equipamento","Sistemas de fixação como grampos (isentos de solda e da largura do chassi) e coxins fixados de forma adequada.","T"],
+ ["7. Verificação do veículo / equipamento","Tela de proteção (vão máximo de 3 x 3 cm) para cargas entre carroceria e cabine em toda a área do vidro, quando aplicável.","T"],
+ ["8. Parte elétrica / câmeras","ADAS.","T"],
+ ["8. Parte elétrica / câmeras","Chave geral para desenergização do sistema elétrico com dispositivo de bloqueio.","T"],
+ ["8. Parte elétrica / câmeras","Condição das placas e selo, quando aplicável.","T"],
+ ["8. Parte elétrica / câmeras","Condição do para-brisa, limpador de para-brisa e esguicho.","T"],
+ ["8. Parte elétrica / câmeras","Farol baixo e alto, farolete (isentos de danos).","T"],
+ ["8. Parte elétrica / câmeras","Funcionamento da buzina.","T"],
+ ["8. Parte elétrica / câmeras","Funcionamento do tacógrafo com certificado de aferição e lacre (digitais).","T"],
+ ["8. Parte elétrica / câmeras","Giroled cor verde de 54 LEDs SMD ou 128 LEDs comuns.","T"],
+ ["8. Parte elétrica / câmeras","Lanternas traseiras - farol / freio (isentas de danos).","T"],
+ ["8. Parte elétrica / câmeras","Luz de placa.","T"],
+ ["8. Parte elétrica / câmeras","Luz de ré e alarme sonoro.","T"],
+ ["8. Parte elétrica / câmeras","Marcador de consumo de combustível funcionando.","T"],
+ ["8. Parte elétrica / câmeras","Pisca-alerta.","T"],
+ ["8. Parte elétrica / câmeras","Setas dianteira e traseira (isentas de danos).","T"],
+ ["8. Parte elétrica / câmeras","Sistema anticolisão (ex.: sensor de aproximação, câmera de ré).","T"],
+ ["8. Parte elétrica / câmeras","Sistema de alarme de freio de estacionamento ativo. Deverá soar caso o freio de estacionamento não seja acionado.","T"]
+];
+var ITENS_EXCLUSIVOS_CAMINHAO=[
+ "As laterais da carroceria estão com trava em seus ganchos, de forma que impeça que caiam ao abrir?",
+ "Condições da escada / estribo de acesso à cabine."
+];
+ITENS_CHECKLIST.forEach(function(item){
+ if(item[2].indexOf("T")===-1||ITENS_EXCLUSIVOS_CAMINHAO.indexOf(item[1])!==-1)return;
+ item[2]+="OV";
+});
+var CHECKLISTS={};
+var secoesChecklist={};
+var fotosPorTipo={},descricoesPorTipo={};
+Object.keys(TIPOS_VEICULO).forEach(function(codigo){
+ var tipo=TIPOS_VEICULO[codigo];
+ CHECKLISTS[tipo]=[];
+ secoesChecklist[tipo]={};
+});
+ITENS_CHECKLIST.forEach(function(item){
+ Object.keys(TIPOS_VEICULO).forEach(function(codigo){
+  if(item[2].indexOf(codigo)===-1)return;
+  var tipo=TIPOS_VEICULO[codigo],secao=secoesChecklist[tipo][item[0]];
+  if(!secao){
+   secao=[item[0],[]];
+   secoesChecklist[tipo][item[0]]=secao;
+   CHECKLISTS[tipo].push(secao);
+  }
+  secao[1].push(item[1]);
+ });
+});
+Object.keys(CHECKLISTS).forEach(function(tipo){
+ fotosPorTipo[tipo]={};
+ descricoesPorTipo[tipo]={};
+});
+
+var $=function(i){return document.getElementById(i)};
+var fotos={};
+var fotosVeiculo={dianteira:null, traseira:null, lateral_esq:null, lateral_dir:null};
+var arquivoPDFPronto=null,versaoDadosChecklist=0;
+var TXT_ENVIAR="📄 Compartilhar PDF pelo WhatsApp";
+var TXT_COMPARTILHAR_PRONTO="📲 Toque para enviar PDF pelo WhatsApp";
+function registrarAlteracaoChecklist(){
+ if(arquivoPDFPronto){
+  var m=$("msg"); if(m) m.style.display="none";
+  var botao=$("btnEnviar");
+  if(botao){botao.style.display="";if(!botao.disabled)botao.textContent=TXT_ENVIAR;}
+ }
+ versaoDadosChecklist++;
+ arquivoPDFPronto=null;
+}
+var CHAVE_RESPOSTAS="checklist-veicular-anglo-respostas-v3";
+var CHAVE_TIPO_VEICULO="checklist-veicular-anglo-tipo-veiculo";
+var avisoFalhaPersistencia=false;
+var n=0,html="";
+
+var tipoVeiculo=$("tipoVeiculo").value;
+try{
+ var tipoSalvo=localStorage.getItem(CHAVE_TIPO_VEICULO);
+ if(CHECKLISTS[tipoSalvo])tipoVeiculo=tipoSalvo;
+}catch(err){informarFalhaPersistencia(err)}
+$("tipoVeiculo").value=tipoVeiculo;
+var SEC=CHECKLISTS[tipoVeiculo];
+function chaveRespostas(tipo){
+ var veiculo=tipo||tipoVeiculo;
+ var chave=CHAVE_RESPOSTAS+(veiculo==="CAMINHONETE"?"":"-"+veiculo.toLowerCase());
+ return veiculo==="ESCAVADEIRA HIDRÁULICA"?chave+"-itens-v2":chave;
+}
+function salvarTipoVeiculo(){
+ try{localStorage.setItem(CHAVE_TIPO_VEICULO,tipoVeiculo)}
+ catch(err){informarFalhaPersistencia(err)}
+}
+function montarChecklist(){
+ SEC=CHECKLISTS[tipoVeiculo];n=0;html="";
+ fotos=fotosPorTipo[tipoVeiculo];
+ SEC.forEach(function(s){
+  html+="<h2>"+s[0]+"</h2>";
+  s[1].forEach(function(t){
+   n++;
+   html+='<div class="item" id="it'+n+'" data-n="'+n+'">'+
+   '<div class="t"><span class="n">'+n+'</span><span>'+t+'</span></div>'+
+   '<div class="opts">'+["ok:OK","nc:NC","na:N/A"].map(function(o){var p=o.split(":");return '<label><input type="radio" name="r'+n+'" value="'+p[1]+'"><span class="'+p[0]+'">'+p[1]+'</span></label>'}).join("")+'</div>'+
+   '<div class="prob"><label class="f">Problema encontrado<textarea id="ob'+n+'" placeholder="Descreva o problema"></textarea></label>'+
+   '<div class="item-fotos"><button type="button" class="btn add" data-add="'+n+'">📷 Adicionar foto do problema</button>'+
+   '<input type="file" accept="image/*" capture="environment" multiple hidden id="fi'+n+'">'+
+   '<div class="thumbs" id="th'+n+'"></div></div></div>'+
+   '</div>';
+  });
+ });
+ $("lista").innerHTML=html;
+ for(var i=1;i<=n;i++){
+  $("ob"+i).value=descricoesPorTipo[tipoVeiculo][i]||"";
+  desenha(i);
+ }
+ restaurarRespostas();
+}
+montarChecklist();
+
+function informarFalhaPersistencia(err){
+ console.error("Não foi possível salvar ou restaurar as marcações do checklist.",err);
+ if(!avisoFalhaPersistencia){
+  avisoFalhaPersistencia=true;
+  alert("Não foi possível guardar as marcações neste navegador. Mantenha esta página aberta para não perder as respostas.");
+ }
+}
+function salvarRespostas(){
+ var respostas={};
+ for(var i=1;i<=n;i++){
+  var marcada=$("it"+i).querySelector("input[type=radio]:checked");
+  if(marcada) respostas[i]=marcada.value;
+ }
+ try{localStorage.setItem(chaveRespostas(),JSON.stringify(respostas))}
+ catch(err){informarFalhaPersistencia(err)}
+}
+function restaurarRespostas(){
+ try{
+  var chave=chaveRespostas(),salvas=localStorage.getItem(chave),respostas;
+  if(salvas===null&&tipoVeiculo==="ESCAVADEIRA HIDRÁULICA"){
+   var antigas=JSON.parse(localStorage.getItem(CHAVE_RESPOSTAS+"-"+tipoVeiculo.toLowerCase())||"{}");
+   respostas={};var itemNovo=0,itemAntigo=0;
+   SEC.forEach(function(sec){
+    sec[1].forEach(function(descricao){
+     itemNovo++;
+     if(descricao==="Disponibilidade do manual do fabricante em língua pátria com identificação da TAG")itemAntigo++;
+     itemAntigo++;
+     var valorAntigo=antigas[itemAntigo];
+     if(valorAntigo==="OK"||valorAntigo==="NC"||valorAntigo==="N/A")respostas[itemNovo]=valorAntigo;
+    });
+   });
+   localStorage.setItem(chave,JSON.stringify(respostas));
+  }else{
+   respostas=JSON.parse(salvas||"{}");
+  }
+  if(!respostas||typeof respostas!=="object") throw new Error("Formato de respostas salvo inválido.");
+  for(var i=1;i<=n;i++){
+   var valor=respostas[i];
+   if(valor!=="OK"&&valor!=="NC"&&valor!=="N/A") continue;
+   var item=$("it"+i),marcada=item.querySelector('input[value="'+valor+'"]');
+   if(marcada){marcada.checked=true;item.classList.toggle("isnc",valor==="NC")}
+  }
+ }catch(err){informarFalhaPersistencia(err)}
+}
+function limparTodasRespostasSalvas(){
+ Object.keys(CHECKLISTS).forEach(function(tipo){
+  try{localStorage.removeItem(chaveRespostas(tipo))}
+  catch(err){informarFalhaPersistencia(err)}
+ });
+ try{localStorage.removeItem(CHAVE_RESPOSTAS+"-escavadeira hidráulica")}
+ catch(err){informarFalhaPersistencia(err)}
+}
+
+/* ====== FOTOS DO VEÍCULO ====== */
+var SLOTS_VEICULO=[
+ {key:"dianteira", label:"Dianteira"},
+ {key:"traseira", label:"Traseira"},
+ {key:"lateral_esq", label:"Lateral esquerda"},
+ {key:"lateral_dir", label:"Lateral direita"}
+];
+var FOTOS_VEICULO_OBRIGATORIAS=false;
+(function(){
+ var g=$("fotosVeiculoGrid");var h="";
+ SLOTS_VEICULO.forEach(function(s){
+  h+='<div class="foto-slot" id="slot_'+s.key+'">'+
+   '<button type="button" class="rm-slot" data-rm-veic="'+s.key+'" aria-label="Remover foto">×</button>'+
+   '<div class="label-slot">'+s.label+'</div>'+
+   '<div class="slot-img-wrap" id="wrap_'+s.key+'"></div>'+
+   '<button type="button" class="btn btn-add-foto" data-add-veic="'+s.key+'">📷 Adicionar foto</button>'+
+   '<input type="file" accept="image/*" capture="environment" hidden id="fi_'+s.key+'">'+
+   '</div>';
+ });
+ g.innerHTML=h;
+})();
+
+function desenhaFotosVeiculo(){
+ SLOTS_VEICULO.forEach(function(s){
+  var slot=$("slot_"+s.key), wrap=$("wrap_"+s.key);
+  var url=fotosVeiculo[s.key];
+  if(url){
+   slot.classList.add("tem-foto");
+   wrap.innerHTML='<img src="'+url+'" alt="'+s.label+'">';
+  }else{
+   slot.classList.remove("tem-foto");
+   wrap.innerHTML='';
+  }
+ });
+ var todas=SLOTS_VEICULO.every(function(s){return !!fotosVeiculo[s.key]});
+ $("avisoFotosVeiculo").classList.toggle("show",FOTOS_VEICULO_OBRIGATORIAS&&!todas);
+ $("cardFotosVeiculo").classList.toggle("miss",FOTOS_VEICULO_OBRIGATORIAS&&!todas);
+ return todas;
+}
+
+document.addEventListener("input",registrarAlteracaoChecklist);
+document.addEventListener("change",function(e){
+ registrarAlteracaoChecklist();
+ var t=e.target;
+ if(t.id==="tipoVeiculo"){
+  if(t.value===tipoVeiculo)return;
+  for(var i=1;i<=n;i++) descricoesPorTipo[tipoVeiculo][i]=$("ob"+i).value;
+  salvarRespostas();
+  tipoVeiculo=t.value;
+  salvarTipoVeiculo();
+  montarChecklist();
+  return;
+ }
+ if(t.type==="radio"){
+  var it=t.closest(".item");
+  if(it){it.classList.toggle("isnc",t.value==="NC");it.classList.remove("miss");salvarRespostas()}
+ }
+ if(t.type==="file"&&t.files.length){
+  if(t.id.indexOf("fi_")===0){
+   var key=t.id.slice(3);
+   var arq=t.files[0],quando=dataHoraAgora();
+   t.value="";
+   pegaGPS().then(function(gps){comprime(arq,function(u){registrarAlteracaoChecklist();fotosVeiculo[key]=u;desenhaFotosVeiculo()},gps,quando)});
+   return;
+  }
+  var k=t.id.slice(2),arquivos=Array.prototype.slice.call(t.files),quando=dataHoraAgora();
+  var tipoFoto=tipoVeiculo,fotosDestino=fotos;
+  t.value="";
+  pegaGPS().then(function(gps){
+   arquivos.forEach(function(f){comprime(f,function(u){registrarAlteracaoChecklist();(fotosDestino[k]=fotosDestino[k]||[]).push(u);if(tipoVeiculo===tipoFoto)desenha(k)},gps,quando)});
+  });
+ }
+});
+document.addEventListener("click",function(e){
+ var av=e.target.getAttribute&&e.target.getAttribute("data-add-veic");
+ if(av){pegaGPS();$("fi_"+av).click();return}
+ var rv=e.target.getAttribute&&e.target.getAttribute("data-rm-veic");
+ if(rv){registrarAlteracaoChecklist();fotosVeiculo[rv]=null;desenhaFotosVeiculo();return}
+ var a=e.target.getAttribute&&e.target.getAttribute("data-add");
+ if(a){$("fi"+a).click();return}
+ var r=e.target.getAttribute&&e.target.getAttribute("data-rm");
+ if(r){registrarAlteracaoChecklist();var p=r.split("-");fotos[p[0]].splice(+p[1],1);desenha(p[0])}
+});
+
+/* ====== GPS + DATA/HORA NA FOTO ====== */
+function pegaGPS(){
+ return new Promise(function(res){
+  if(!navigator.geolocation){res(null);return}
+  navigator.geolocation.getCurrentPosition(function(p){res({lat:p.coords.latitude,lon:p.coords.longitude,acc:p.coords.accuracy})},function(){res(null)},{enableHighAccuracy:true,timeout:10000,maximumAge:20000});
+ });
+}
+function dataHoraAgora(){
+ var d=new Date(),z=function(x){return String(x).padStart(2,"0")};
+ return z(d.getDate())+"/"+z(d.getMonth()+1)+"/"+d.getFullYear()+" "+z(d.getHours())+":"+z(d.getMinutes())+":"+z(d.getSeconds());
+}
+function carimbo(c,gps,quando){
+ var x=c.getContext("2d"),fs=Math.max(14,Math.round(c.width/42)),pad=Math.round(fs*0.5);
+ var l1=quando;
+ var l2=gps?("GPS: "+gps.lat.toFixed(6)+", "+gps.lon.toFixed(6)+" (±"+Math.round(gps.acc)+" m)"):"GPS indisponível";
+ var h=fs*2+pad*3;
+ x.fillStyle="rgba(0,0,0,0.6)";x.fillRect(0,c.height-h,c.width,h);
+ x.fillStyle="#fff";x.font="bold "+fs+"px Arial, sans-serif";x.textBaseline="top";
+ x.fillText(l1,pad,c.height-h+pad);
+ x.fillText(l2,pad,c.height-h+pad*2+fs);
+}
+function comprime(file,cb,gps,quando){
+ var rd=new FileReader();
+ rd.onload=function(){
+  var im=new Image();
+  im.onload=function(){
+   var m=1100,s=Math.min(1,m/Math.max(im.width,im.height));
+   var c=document.createElement("canvas");c.width=im.width*s;c.height=im.height*s;
+   c.getContext("2d").drawImage(im,0,0,c.width,c.height);
+   carimbo(c,gps,quando);
+   cb(c.toDataURL("image/jpeg",0.72));
+  };
+  im.src=rd.result;
+ };
+ rd.readAsDataURL(file);
+}
+function desenha(k){
+ $("th"+k).innerHTML=(fotos[k]||[]).map(function(u,i){return '<div class="thumb"><img src="'+u+'" alt="Foto do item '+k+'"><button type="button" data-rm="'+k+'-'+i+'" aria-label="Remover foto">×</button></div>'}).join("");
+}
+
+/* datas */
+var hoje=new Date();hoje=new Date(hoje.getTime()-hoje.getTimezoneOffset()*60000).toISOString().slice(0,10);
+$("dataass").value=hoje;
+
+/* máscara CPF */
+$("cpf").addEventListener("input",function(){
+ var v=this.value.replace(/\D/g,"").slice(0,11);
+ var out="";
+ if(v.length>0)out=v.slice(0,3);
+ if(v.length>3)out+="."+v.slice(3,6);
+ if(v.length>6)out+="."+v.slice(6,9);
+ if(v.length>9)out+="-"+v.slice(9,11);
+ this.value=out;
+});
+
+/* assinatura */
+var cv=$("sig"),cx=cv.getContext("2d"),desenhando=false,assinou=false;
+function ajusta(){
+ var r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;
+ cv.width=r.width*d;cv.height=r.height*d;
+ cx.setTransform(d,0,0,d,0,0);cx.lineWidth=2.5;cx.lineCap="round";cx.lineJoin="round";cx.strokeStyle="#000";
+}
+ajusta();window.addEventListener("resize",function(){if(!assinou)ajusta()});
+function pos(e){var r=cv.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]}
+cv.addEventListener("pointerdown",function(e){e.preventDefault();cv.setPointerCapture(e.pointerId);desenhando=true;var p=pos(e);cx.beginPath();cx.moveTo(p[0],p[1]);cx.lineTo(p[0]+.1,p[1]+.1);cx.stroke();assinou=true});
+cv.addEventListener("pointermove",function(e){if(!desenhando)return;e.preventDefault();var p=pos(e);cx.lineTo(p[0],p[1]);cx.stroke()});
+["pointerup","pointercancel"].forEach(function(ev){cv.addEventListener(ev,function(){desenhando=false})});
+$("limpa").onclick=function(){assinou=false;ajusta()};
+
+/* ============ VALIDAÇÃO ============ */
+function validar(){
+ var primeiro=null;
+
+ var fotosOk=SLOTS_VEICULO.every(function(s){return !!fotosVeiculo[s.key]});
+ if(FOTOS_VEICULO_OBRIGATORIAS&&!fotosOk){
+  $("avisoFotosVeiculo").classList.add("show");
+  $("cardFotosVeiculo").classList.add("miss");
+  primeiro=primeiro||$("cardFotosVeiculo");
+ }
+
+ var extra=[];
+ if(!$("motorista").value.trim())extra.push("nome do motorista");
+ if(!$("cpf").value.trim())extra.push("CPF do motorista");
+ if(!assinou)extra.push("assinatura");
+
+ var m=$("msg");
+ if(extra.length||(FOTOS_VEICULO_OBRIGATORIAS&&!fotosOk)){
+  var t=[];
+  if(FOTOS_VEICULO_OBRIGATORIAS&&!fotosOk)t.push("Adicione as 4 fotos do veículo (dianteira, traseira, lateral esquerda e lateral direita).");
+  if(extra.length)t.push("Falta: "+extra.join(" e ")+".");
+  m.textContent=t.join(" ");m.style.display="block";
+  (primeiro||m).scrollIntoView({behavior:"smooth",block:"center"});
+  return false;
+ }
+ m.style.display="none";
+ return true;
+}
+
+/* ============ PREPARA A TABELA PARA O PDF ============ */
+function prepararParaPDF(){
+  var stage=document.createElement("div");
+  stage.id="pdfStage";
+  stage.style.cssText="position:relative;width:1000px;z-index:99999;background:#fff;color:#111;opacity:1;pointer-events:none;overflow:visible;box-sizing:border-box;font:12px/1.35 Arial,sans-serif;padding:16px 20px;";
+  function elemento(tag,texto,css){
+    var el=document.createElement(tag);
+    if(texto!==undefined)el.textContent=texto;
+    if(css)el.style.cssText=css;
+    return el;
+  }
+  function celula(linha,texto,css,tag){
+    linha.appendChild(elemento(tag||"td",texto,css));
+  }
+  function tabela(cabecalhos){
+    var t=elemento("table",undefined,"width:100%;border-collapse:collapse;table-layout:fixed;margin:8px 0 12px;");
+    var thead=elemento("thead"),tr=elemento("tr");
+    cabecalhos.forEach(function(titulo){
+      celula(tr,titulo,"border:1px solid #9aa79f;background:#1f6b4a;color:#fff;padding:6px;text-align:left;font-weight:bold;","th");
+    });
+    thead.appendChild(tr);t.appendChild(thead);t.appendChild(elemento("tbody"));
+    return t;
+  }
+  var titulo=elemento("h1","EMFLORTEC ENGENHARIA | CHECKLIST VEICULAR ANGLO","font-size:18px;text-align:center;margin:0 0 10px;color:#1f6b4a;");
+  stage.appendChild(titulo);
+  var dados=tabela(["Identificação","Dados","Identificação","Dados","Identificação","Dados"]);
+  [
+    ["Tipo de veículo",tipoVeiculo,"TAG", $("tag").value.trim()||"-","Data",$("dataass").value||"-"],
+    ["Motorista",$("motorista").value.trim()||"-","CPF",$("cpf").value.trim()||"-","Quilometragem",$("km").value||"-"]
+  ].forEach(function(valores){
+    var tr=elemento("tr");
+    valores.forEach(function(valor,i){
+      celula(tr,valor,i%2===0?"border:1px solid #c5ccc8;padding:6px;background:#edf2ef;font-weight:bold;":"border:1px solid #c5ccc8;padding:6px;overflow-wrap:anywhere;");
+    });
+    dados.tBodies[0].appendChild(tr);
+  });
+  stage.appendChild(dados);
+  var fotosVeiculoTexto=SLOTS_VEICULO.filter(function(slot){return !!fotosVeiculo[slot.key]}).map(function(slot){return slot.label}).join(", ")||"Nenhuma";
+  var resumoFotos=elemento("p","Fotos do veículo: "+fotosVeiculoTexto,"margin:4px 0 10px;color:#333;");
+  stage.appendChild(resumoFotos);
+  var observacoes=$("obs").value.trim();
+  if(observacoes){
+    stage.appendChild(elemento("p","Observações gerais: "+observacoes,"margin:6px 0 12px;padding:7px;border:1px solid #c5ccc8;white-space:pre-wrap;"));
+  }
+  var checklist=tabela(["Nº","Item do checklist","Resultado","Observação / problema","Fotos"]);
+  checklist.style.cssText+=";font-size:10px;";
+  checklist.querySelectorAll("th").forEach(function(th){th.style.padding="5px";});
+  var itemN=0,fotosAnexo=[];
+  SEC.forEach(function(sec){
+    var secao=elemento("tr"),cel=elemento("th",sec[0],"border:1px solid #9aa79f;background:#dce9e1;color:#174e36;padding:5px;text-align:left;font-size:10px;");
+    cel.colSpan=5;secao.appendChild(cel);checklist.tBodies[0].appendChild(secao);
+    sec[1].forEach(function(descricao){
+      itemN++;
+      var item=$("it"+itemN),resposta=item.querySelector('input[type="radio"]:checked');
+      var observacao=$("ob"+itemN).value.trim(),fotosItem=fotos[itemN]||[];
+      var tr=elemento("tr");
+      celula(tr,String(itemN),"border:1px solid #c5ccc8;padding:4px 5px;text-align:center;vertical-align:top;font-weight:bold;");
+      celula(tr,descricao,"border:1px solid #c5ccc8;padding:4px 5px;vertical-align:top;overflow-wrap:anywhere;");
+      celula(tr,resposta?resposta.value:"-","border:1px solid #c5ccc8;padding:4px 5px;text-align:center;vertical-align:top;font-weight:bold;"+(resposta&&resposta.value==="NC"?"color:#c0392b;":""));
+      celula(tr,observacao||"-","border:1px solid #c5ccc8;padding:4px 5px;vertical-align:top;white-space:pre-wrap;overflow-wrap:anywhere;");
+      celula(tr,fotosItem.length?String(fotosItem.length):"-","border:1px solid #c5ccc8;padding:4px 5px;text-align:center;vertical-align:top;");
+      checklist.tBodies[0].appendChild(tr);
+      fotosItem.forEach(function(url,fotoN){
+        fotosAnexo.push({url:url,legenda:"Item "+itemN+" — "+descricao+" — foto "+(fotoN+1)+"/"+fotosItem.length});
+      });
+    });
+  });
+  checklist.querySelectorAll("th").forEach(function(th){th.style.cssText+=";border:1px solid #9aa79f;background:#1f6b4a;color:#fff;padding:6px;text-align:left;font-weight:bold;";});
+  var larguras=["5%","43%","10%","34%","8%"];
+  checklist.querySelectorAll("tr").forEach(function(tr){
+    if(tr.cells.length===5)tr.cells.forEach(function(td,i){td.style.width=larguras[i];});
+  });
+  stage.appendChild(checklist);
+  var assinatura=document.querySelector("#sig");
+  if(assinatura&&assinou){
+    var areaAssinatura=elemento("div",undefined,"margin-top:10px;display:flex;align-items:flex-end;gap:16px;");
+    var img=document.createElement("img");
+    var pixels=assinatura.getContext("2d").getImageData(0,0,assinatura.width,assinatura.height).data;
+    var left=assinatura.width,top=assinatura.height,right=-1,bottom=-1;
+    for(var y=0;y<assinatura.height;y++){
+      for(var x=0;x<assinatura.width;x++){
+        var pixel=(y*assinatura.width+x)*4;
+        if(pixels[pixel+3]>16&&(pixels[pixel]<245||pixels[pixel+1]<245||pixels[pixel+2]<245)){
+          if(x<left)left=x;
+          if(x>right)right=x;
+          if(y<top)top=y;
+          if(y>bottom)bottom=y;
+        }
+      }
+    }
+    var imagemAssinatura=document.createElement("canvas");
+    if(right>=left&&bottom>=top){
+      var larguraRecorte=right-left+1,alturaRecorte=bottom-top+1,margem=Math.max(12,Math.round(Math.max(larguraRecorte,alturaRecorte)*0.06));
+      imagemAssinatura.width=larguraRecorte+margem*2;
+      imagemAssinatura.height=alturaRecorte+margem*2;
+      var contextoAssinatura=imagemAssinatura.getContext("2d");
+      contextoAssinatura.fillStyle="#fff";
+      contextoAssinatura.fillRect(0,0,imagemAssinatura.width,imagemAssinatura.height);
+      contextoAssinatura.drawImage(assinatura,left,top,larguraRecorte,alturaRecorte,margem,margem,larguraRecorte,alturaRecorte);
+    }else{
+      imagemAssinatura.width=assinatura.width;
+      imagemAssinatura.height=assinatura.height;
+      imagemAssinatura.getContext("2d").drawImage(assinatura,0,0);
+    }
+    img.alt="Assinatura do motorista";img.src=imagemAssinatura.toDataURL("image/png");
+    img.style.cssText="display:block;width:240px;height:65px;object-fit:contain;background:#fff;";
+    areaAssinatura.appendChild(img);
+    areaAssinatura.appendChild(elemento("span","Assinatura do motorista","padding-bottom:4px;"));
+    areaAssinatura.appendChild(elemento("span","Documento gerado em "+new Date().toLocaleString("pt-BR"),"margin-left:auto;padding-bottom:4px;color:#555;"));
+    stage.appendChild(areaAssinatura);
+  }else{
+    stage.appendChild(elemento("p","Documento gerado em "+new Date().toLocaleString("pt-BR"),"text-align:right;margin-top:10px;color:#555;font-size:10px;"));
+  }
+  SLOTS_VEICULO.forEach(function(slot){
+    if(fotosVeiculo[slot.key])fotosAnexo.push({url:fotosVeiculo[slot.key],legenda:"Foto do veículo — "+slot.label});
+  });
+  if(fotosAnexo.length){
+    var anexo=elemento("section",undefined,"break-before:page;page-break-before:always;margin-top:12px;");
+    anexo.className="pdf-photo-appendix";
+    anexo.appendChild(elemento("h2","FOTOS DO CHECKLIST","font-size:16px;text-align:center;margin:0 0 12px;color:#1f6b4a;"));
+    var grade=elemento("table",undefined,"width:100%;border-collapse:separate;border-spacing:10px 8px;table-layout:fixed;");
+    var corpo=elemento("tbody");grade.appendChild(corpo);
+    for(var fotoIndice=0;fotoIndice<fotosAnexo.length;fotoIndice+=2){
+      var linhaFotos=elemento("tr");
+      [fotosAnexo[fotoIndice],fotosAnexo[fotoIndice+1]].forEach(function(foto){
+        var celulaFoto=elemento("td",undefined,"width:50%;border:1px solid #c5ccc8;padding:8px;vertical-align:top;text-align:center;");
+        if(foto){
+          celulaFoto.appendChild(elemento("p",foto.legenda,"margin:0 0 6px;font-size:11px;font-weight:bold;text-align:left;"));
+          var img=document.createElement("img");
+          img.alt=foto.legenda;img.src=foto.url;
+          img.style.cssText="display:block;width:100%;height:250px;object-fit:contain;";
+          celulaFoto.appendChild(img);
+        }
+        linhaFotos.appendChild(celulaFoto);
+      });
+      corpo.appendChild(linhaFotos);
+    }
+    anexo.appendChild(grade);
+    stage.appendChild(anexo);
+  }
+  document.body.appendChild(stage);
+  return stage;
+}
+function aguardarImagens(el){
+  var imgs=Array.prototype.slice.call(el.querySelectorAll("img"));
+  return Promise.all(imgs.map(function(im){
+    if(im.complete && im.naturalWidth>0) return Promise.resolve();
+    return new Promise(function(resolve){var done=function(){resolve();};im.addEventListener("load",done,{once:true});im.addEventListener("error",done,{once:true});setTimeout(done,5000);});
+  }));
+}
+function gerarPDF(){
+  if(typeof html2pdf==="undefined") return Promise.reject(new Error("A biblioteca de PDF não carregou. Verifique a internet."));
+  var stage=prepararParaPDF();
+  var opt={margin:[7,7,7,7],image:{type:"jpeg",quality:0.92},html2canvas:{scale:1.25,useCORS:true,backgroundColor:"#ffffff",logging:false,allowTaint:false,scrollX:0,scrollY:0,windowWidth:1000},jsPDF:{unit:"mm",format:"a4",orientation:"landscape",compress:true},pagebreak:{mode:["css","legacy"],avoid:["tr"],before:[".pdf-photo-appendix"]}};
+  return aguardarImagens(stage).then(function(){return html2pdf().set(opt).from(stage).toPdf().get("pdf").then(function(pdf){
+    if(!pdf || pdf.internal.getNumberOfPages()<1) throw new Error("O PDF não contém páginas.");
+    return pdf.output("blob");
+  });}).then(function(blob){
+    if(stage.parentNode) stage.parentNode.removeChild(stage);
+    if(!blob || blob.size<1000) throw new Error("O arquivo gerado ficou vazio ou incompleto (menos de 1 KB).");
+    return blob;
+  }).catch(function(err){if(stage && stage.parentNode) stage.parentNode.removeChild(stage);throw err;});
+}
+/* ============ BOTÕES ============ */
+function placaLimpa(){return (($('tag').value||"").toUpperCase().replace(/[^A-Z0-9_-]/g,""))||"SEM PLACA";}
+function dataArquivo(){var v=($('dataass')&&$('dataass').value)||"";var m=v.match(/^(\d{4})-(\d{2})-(\d{2})$/);if(m)return m[3]+"-"+m[2]+"-"+m[1];var d=new Date();return ("0"+d.getDate()).slice(-2)+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+d.getFullYear();}
+function nomeBase(){return "CHECKLIST - "+tipoVeiculo+" - "+placaLimpa()+" - "+dataArquivo();}
+function nomeArquivoPDF(){return nomeBase()+".pdf";}
+function mostrarMsg(t){
+  var m=$("msg");m.textContent=t;m.style.display="block";
+  m.scrollIntoView({behavior:"smooth",block:"center"});
+}
+function baixarArquivo(arquivo,nome){
+  var conteudo=arquivo.blob||arquivo,url=URL.createObjectURL(conteudo),a=document.createElement("a");
+  a.href=url;a.download=nome||arquivo.name;a.style.display="none";document.body.appendChild(a);a.click();
+  setTimeout(function(){a.remove();URL.revokeObjectURL(url);},15000);
+}
+function podeCompartilhar(arquivos){
+  try{return !!(navigator.share&&(!navigator.canShare||navigator.canShare({files:arquivos})));}
+  catch(e){return false;}
+}
+function criarArquivo(blob,nome,tipo){
+  return typeof File==="undefined"?{blob:blob,name:nome,type:tipo}:new File([blob],nome,{type:tipo});
+}
+function compartilharPDFPronto(){
+  if(!arquivoPDFPronto)return;
+  var arquivo=arquivoPDFPronto,versao=versaoDadosChecklist;
+  function baixarComOrientacao(motivo){
+    baixarArquivo(arquivo);
+    mostrarMsg("Não foi possível abrir o compartilhamento"+(motivo?" ("+motivo+")":"")+". O PDF foi baixado; no WhatsApp toque no clipe > Documento e escolha “"+arquivo.name+"”.");
+  }
+  var podeIniciarCompartilhamento=podeCompartilhar([arquivo]);
+  if(!podeIniciarCompartilhamento){
+    baixarComOrientacao("este aparelho não aceita esse arquivo");
+    return;
+  }
+  var compartilhamento;
+  try{
+    compartilhamento=navigator.share({files:[arquivo],title:nomeBase(),text:nomeBase()});
+  }catch(err){
+    if(err&&err.name==="AbortError") return;
+    console.error("Falha ao compartilhar o PDF.",err);
+    baixarComOrientacao((err&&err.name)||"erro");
+    return;
+  }
+  Promise.resolve(compartilhamento).catch(function(err){
+    if(err&&err.name==="AbortError") return;
+    console.error("Falha ao compartilhar o PDF.",err);
+    if(versao!==versaoDadosChecklist){
+      mostrarMsg("Os dados foram alterados durante o compartilhamento. Gere o PDF novamente antes de compartilhar.");
+      return;
+    }
+    baixarComOrientacao((err&&err.name)||"erro");
+  });
+}
+
+/* ============ COMPARTILHAMENTO ============ */
+$("btnEnviar").onclick=function(){
+  if(arquivoPDFPronto){compartilharPDFPronto();return;}
+  if(!validar()) return;
+  var btn=this;btn.disabled=true;
+  $("msg").style.display="none";
+  var versao=versaoDadosChecklist;
+  btn.textContent="⏳ Gerando PDF...";
+  gerarPDF().then(function(blob){
+    if(versao!==versaoDadosChecklist) throw new Error("Os dados foram alterados durante a geração. Prepare o PDF novamente.");
+    arquivoPDFPronto=criarArquivo(blob,nomeArquivoPDF(),"application/pdf");
+    btn.textContent=TXT_COMPARTILHAR_PRONTO;
+    mostrarMsg("PDF pronto. Toque novamente no botão e escolha o WhatsApp para compartilhar.");
+  }).catch(function(err){
+    console.error(err);
+    mostrarMsg("Não foi possível preparar os arquivos: "+((err&&err.message)||"erro desconhecido"));
+  }).finally(function(){
+    btn.disabled=false;
+    if(!arquivoPDFPronto)btn.textContent=TXT_ENVIAR;
+  });
+};
+$('btnNovo').onclick=function(){
+  if(!confirm("Deseja iniciar um NOVO CHECKLIST? Todos os dados, fotos, marcações e assinatura atuais serão apagados. Exporte os arquivos antes de continuar.")) return;
+  registrarAlteracaoChecklist();
+  limparTodasRespostasSalvas();
+  document.querySelectorAll('input[type="text"],input[type="number"],textarea,select').forEach(function(el){el.value="";});
+  $("tipoVeiculo").value=tipoVeiculo;
+  document.querySelectorAll('input[type="radio"],input[type="checkbox"]').forEach(function(el){el.checked=false;});
+  document.querySelectorAll('.item').forEach(function(el){el.classList.remove('isnc','miss');});
+  Object.keys(CHECKLISTS).forEach(function(tipo){fotosPorTipo[tipo]={};descricoesPorTipo[tipo]={};});
+  fotos=fotosPorTipo[tipoVeiculo];
+  for(var i=1;i<=n;i++)desenha(i);
+  Object.keys(fotosVeiculo).forEach(function(k){fotosVeiculo[k]=null;});
+  desenhaFotosVeiculo();
+  $('obs').value='';$('msg').style.display='none';$('cardFotosVeiculo').classList.remove('miss');
+  assinou=false;ajusta();
+  var h=new Date();h=new Date(h.getTime()-h.getTimezoneOffset()*60000).toISOString().slice(0,10);$('dataass').value=h;
+  window.scrollTo({top:0,behavior:'smooth'});
+};
+
+/* Inicializa */
+(function(){
+  desenhaFotosVeiculo();
+})();
+
+/* PWA: funcionamento offline e instalação na tela inicial */
+if("serviceWorker" in navigator){
+  window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(e){console.warn("SW não registrado",e)})});
+}
+</script>
+</body>
+</html>
