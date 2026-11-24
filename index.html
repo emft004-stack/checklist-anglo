@@ -164,7 +164,7 @@ h2{font-size:.95rem;margin:18px 0 8px;color:var(--ac);text-transform:uppercase;l
   <button type="button" class="btn sec" id="btnNovo">🆕 Novo Checklist</button>
 </div>
 <p class="hint noprint" style="margin-top:8px">Escolha o WhatsApp e o destinatário no menu de compartilhamento. Em alguns aparelhos, pode ser necessário tocar novamente após gerar o PDF. Use “Novo Checklist” somente quando quiser limpar os dados.</p>
-<p class="hint noprint" style="margin-top:8px">O checklist também é colocado na fila de envio ao Google Drive. Se estiver offline, mantenha ou abra o aplicativo quando houver internet para enviar.</p>
+<p class="hint noprint" style="margin-top:8px">O PDF, as fotos e um CSV com os dados do checklist são colocados na fila de envio ao Google Drive. O CSV não contém imagens. Se estiver offline, mantenha ou abra o aplicativo quando houver internet para enviar.</p>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -904,7 +904,11 @@ function postarDrive(corpo,tentativa){
       var dados=null;
       try{dados=JSON.parse(texto);}catch(err){}
       if(!dados)throw new Error("O Google não respondeu como esperado. Verifique a URL do script e reimplante (Qualquer pessoa).");
-      if(!dados.ok){var e=new Error(dados.erro||"O Google Drive recusou o arquivo.");e.definitivo=true;throw e;}
+      if(!dados.ok){
+        var detalhe=dados.erro||"O Google Drive recusou o arquivo.";
+        if(corpo.acao==="salvar_csv")detalhe="Não foi possível salvar o CSV. Verifique a pasta e reimplante o Apps Script atualizado: "+detalhe;
+        var e=new Error(detalhe);e.definitivo=true;throw e;
+      }
       return dados;
     });
   }).catch(function(err){
@@ -915,6 +919,13 @@ function postarDrive(corpo,tentativa){
   });
 }
 function enviarArquivoDrive(pasta,arq,aoAvancar){
+  if(arq.destino==="csv"){
+    return postarDrive({acao:"salvar_csv",nomeCsv:arq.nome,csvBase64:arq.dados}).then(function(d){
+      if(d.destino!=="csv")throw new Error("O Apps Script não confirmou o destino do CSV. Reimplante o script atualizado.");
+      aoAvancar(arq.dados.length);
+      return d;
+    });
+  }
   var total=Math.max(1,Math.ceil(arq.dados.length/TAM_PARTE));
   var id=String(Date.now())+Math.random().toString(36).slice(2,6),i=0,ultimo=null;
   function proxima(){
@@ -937,6 +948,31 @@ function listaArquivosDrive(pdfBase64){
     });
   }
   return lista;
+}
+function gerarCSV(id,pasta){
+  var colunas=["ID checklist","Data","Tipo de veículo","TAG","Quilometragem","Motorista","CPF","Assinado","Observações gerais","Tem fotos","Quantidade de fotos","Fotos do veículo","Pasta do checklist","Seção","Número do item","Item","Resultado","Observação do item","Tem foto do item","Quantidade de fotos do item"];
+  var fotosVeiculoLista=SLOTS_VEICULO.filter(function(slot){return !!fotosVeiculo[slot.key];}).map(function(slot){return slot.label;});
+  var totalFotos=fotosVeiculoLista.length;
+  for(var i=1;i<=n;i++)totalFotos+=(fotos[i]||[]).length;
+  var data=$('dataass').value;
+  if(data)data=data.split('-').reverse().join('/');
+  var comuns=[id,data,tipoVeiculo,$('tag').value.trim(),$('km').value,$('motorista').value.trim(),$('cpf').value.trim(),assinou?"Sim":"Não",$('obs').value.trim(),totalFotos?"Sim":"Não",totalFotos,fotosVeiculoLista.join(", "),pasta];
+  var linhas=[colunas],numero=0;
+  SEC.forEach(function(sec){
+    sec[1].forEach(function(descricao){
+      numero++;
+      var resposta=$('it'+numero).querySelector('input[type="radio"]:checked');
+      var quantidade=(fotos[numero]||[]).length;
+      linhas.push(comuns.concat([sec[0],numero,descricao,resposta?resposta.value:"",$('ob'+numero).value.trim(),quantidade?"Sim":"Não",quantidade]));
+    });
+  });
+  return "\ufeff"+linhas.map(function(linha){
+    return linha.map(function(valor){
+      var texto=String(valor);
+      if(/^[\t\r\n]/.test(texto)||/^[\s\ufeff]*[=+\-@]/.test(texto))texto="'"+texto;
+      return '"'+texto.replace(/"/g,'""')+'"';
+    }).join(";");
+  }).join("\r\n")+"\r\n";
 }
 
 var FILA_DB="checklist-anglo-fila-envio",FILA_STORE="pendentes",enviandoFila=false,errosFila={};
@@ -1028,8 +1064,9 @@ function enfileirarPDFDrive(envio){
     return;
   }
   envio.salvando=true;
-  blobParaBase64(envio.blob).then(function(pdf64){
-    envio.item.arquivos[0].dados=pdf64;
+  Promise.all([blobParaBase64(envio.blob),blobParaBase64(envio.csvBlob)]).then(function(arquivos64){
+    envio.item.arquivos[0].dados=arquivos64[0];
+    envio.item.arquivos[envio.item.arquivos.length-1].dados=arquivos64[1];
     return filaSalvar(envio.item);
   }).then(function(){
     envio.salvo=true;
@@ -1076,8 +1113,12 @@ $("btnEnviar").onclick=function(){
   btn.textContent="⏳ Gerando PDF...";
   gerarPDF().then(function(blob){
     if(versao!==versaoDadosChecklist) throw new Error("Os dados foram alterados durante a geração. Prepare o PDF novamente.");
+    var id="chk-"+Date.now()+"-"+Math.random().toString(36).slice(2,12);
+    var arquivos=listaArquivosDrive("");
+    arquivos.push({nome:"checklist-"+id+".csv",mime:"text/csv;charset=utf-8",dados:"",destino:"csv"});
+    var csvBlob=new Blob([gerarCSV(id,pasta)],{type:"text/csv;charset=utf-8"});
     arquivoPDFPronto=criarArquivo(blob,pdfNome,"application/pdf");
-    envioDrivePDF={blob:blob,salvo:false,salvando:false,item:{id:String(Date.now())+Math.random().toString(36).slice(2,6),pasta:pasta,pdfNome:pdfNome,arquivos:listaArquivosDrive(""),criado:Date.now()}};
+    envioDrivePDF={blob:blob,csvBlob:csvBlob,salvo:false,salvando:false,item:{id:id,pasta:pasta,pdfNome:pdfNome,arquivos:arquivos,criado:Date.now()}};
     btn.textContent=TXT_COMPARTILHAR_PRONTO;
     enfileirarPDFDrive(envioDrivePDF);
     compartilharPDFPronto(true);

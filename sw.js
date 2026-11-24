@@ -1,4 +1,4 @@
-const VERSAO = "checklist-anglo-v23";
+const VERSAO = "checklist-anglo-v24";
 const ARQUIVOS = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
 const CDNS = [
   "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
