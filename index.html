@@ -783,21 +783,17 @@ function prepararParaPDF(){
     var anexo=elemento("section",undefined,"break-before:page;page-break-before:always;margin-top:12px;");
     anexo.className="pdf-photo-appendix";
     anexo.appendChild(elemento("h2","FOTOS DO CHECKLIST","font-size:16px;text-align:center;margin:0 0 12px;color:#1f6b4a;"));
-    var grade=elemento("table",undefined,"width:100%;border-collapse:separate;border-spacing:10px 8px;table-layout:fixed;");
+    var grade=elemento("table",undefined,"width:100%;border-collapse:collapse;table-layout:fixed;");
     var corpo=elemento("tbody");grade.appendChild(corpo);
-    for(var fotoIndice=0;fotoIndice<fotosAnexo.length;fotoIndice+=2){
-      var linhaFotos=elemento("tr");
-      [fotosAnexo[fotoIndice],fotosAnexo[fotoIndice+1]].forEach(function(foto){
-        var celulaFoto=elemento("td",undefined,"width:50%;border:1px solid #c5ccc8;padding:8px;vertical-align:top;text-align:center;");
-        if(foto){
-          celulaFoto.appendChild(elemento("p",foto.legenda,"margin:0 0 6px;font-size:11px;font-weight:bold;text-align:left;"));
-          var img=document.createElement("img");
-          img.alt=foto.legenda;img.src=foto.url;
-          img.style.cssText="display:block;width:100%;height:250px;object-fit:contain;";
-          celulaFoto.appendChild(img);
-        }
-        linhaFotos.appendChild(celulaFoto);
-      });
+    for(var fotoIndice=0;fotoIndice<fotosAnexo.length;fotoIndice++){
+      var linhaFotos=elemento("tr"),foto=fotosAnexo[fotoIndice];
+      var celulaFoto=elemento("td",undefined,"width:100%;border:1px solid #c5ccc8;padding:8px;vertical-align:top;text-align:center;break-inside:avoid;page-break-inside:avoid;");
+      celulaFoto.appendChild(elemento("p",foto.legenda,"margin:0 0 6px;font-size:11px;font-weight:bold;text-align:left;"));
+      var img=document.createElement("img");
+      img.alt=foto.legenda;img.src=foto.url;
+      img.style.cssText="display:block;width:auto;height:auto;max-width:100%;max-height:440px;margin:0 auto;";
+      celulaFoto.appendChild(img);
+      linhaFotos.appendChild(celulaFoto);
       corpo.appendChild(linhaFotos);
     }
     anexo.appendChild(grade);
