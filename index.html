@@ -827,6 +827,7 @@ function gerarPDF(){
 function placaLimpa(){return (($('tag').value||"").toUpperCase().replace(/[^A-Z0-9_-]/g,""))||"SEM PLACA";}
 function dataArquivo(){var v=($('dataass')&&$('dataass').value)||"";var m=v.match(/^(\d{4})-(\d{2})-(\d{2})$/);if(m)return m[3]+"-"+m[2]+"-"+m[1];var d=new Date();return ("0"+d.getDate()).slice(-2)+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+d.getFullYear();}
 function horaArquivo(){var d=new Date();return ("0"+d.getHours()).slice(-2)+"-"+("0"+d.getMinutes()).slice(-2);}
+function horaArquivoSeg(){var d=new Date();return ("0"+d.getHours()).slice(-2)+"-"+("0"+d.getMinutes()).slice(-2)+"-"+("0"+d.getSeconds()).slice(-2);}
 function nomeBase(){return "CHECKLIST - "+tipoVeiculo+" - "+placaLimpa()+" - "+dataArquivo();}
 function nomeArquivoPDF(){return nomeBase()+".pdf";}
 function mostrarMsg(t){
@@ -937,8 +938,8 @@ function enviarArquivoDrive(pasta,arq,aoAvancar){
   }
   return proxima();
 }
-function listaArquivosDrive(pdfBase64){
-  var lista=[{nome:nomeArquivoPDF(),mime:"application/pdf",dados:pdfBase64}];
+function listaArquivosDrive(pdfBase64,pdfNome){
+  var lista=[{nome:pdfNome||nomeArquivoPDF(),mime:"application/pdf",dados:pdfBase64}];
   SLOTS_VEICULO.forEach(function(slot){
     if(fotosVeiculo[slot.key])lista.push({nome:"veiculo-"+slot.key+".jpg",mime:"image/jpeg",dados:fotosVeiculo[slot.key].split(",")[1]||""});
   });
@@ -1109,13 +1110,13 @@ $("btnEnviar").onclick=function(){
   if(!validar()) return;
   var btn=this;btn.disabled=true;
   $("msg").style.display="none";
-  var versao=versaoDadosChecklist,pasta=nomeBase()+" - "+horaArquivo(),pdfNome=nomeArquivoPDF();
+  var versao=versaoDadosChecklist,pasta=nomeBase()+" - "+horaArquivo(),pdfNome=nomeBase()+" - "+horaArquivoSeg()+".pdf";
   btn.textContent="⏳ Gerando PDF...";
   gerarPDF().then(function(blob){
     if(versao!==versaoDadosChecklist) throw new Error("Os dados foram alterados durante a geração. Prepare o PDF novamente.");
     var id="chk-"+Date.now()+"-"+Math.random().toString(36).slice(2,12);
-    var arquivos=listaArquivosDrive("");
-    arquivos.push({nome:"checklist-"+id+".csv",mime:"text/csv;charset=utf-8",dados:"",destino:"csv"});
+    var arquivos=listaArquivosDrive("",pdfNome);
+    arquivos.push({nome:pdfNome.replace(/\.pdf$/i,".csv"),mime:"text/csv;charset=utf-8",dados:"",destino:"csv"});
     var csvBlob=new Blob([gerarCSV(id,pasta)],{type:"text/csv;charset=utf-8"});
     arquivoPDFPronto=criarArquivo(blob,pdfNome,"application/pdf");
     envioDrivePDF={blob:blob,csvBlob:csvBlob,salvo:false,salvando:false,item:{id:id,pasta:pasta,pdfNome:pdfNome,arquivos:arquivos,criado:Date.now()}};
